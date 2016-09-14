@@ -4,9 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.nh0815</groupId>
-  <artifactId>wilson</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>Wilson</artifactId>
   <version>1.0-SNAPSHOT</version>
+  <modules>
+    <module>WilsonServer</module>
+    <module>WilsonClient</module>
+  </modules>
+  <packaging>pom</packaging>
 
   <build>
     <plugins>
