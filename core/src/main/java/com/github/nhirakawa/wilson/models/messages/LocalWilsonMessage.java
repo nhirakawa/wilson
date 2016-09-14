@@ -1,0 +1,4 @@
+package com.github.nhirakawa.wilson.models.messages;
+
+public interface LocalWilsonMessage extends WilsonMessage {
+}
