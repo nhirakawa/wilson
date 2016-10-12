@@ -9,6 +9,7 @@
   <modules>
     <module>WilsonServer</module>
     <module>WilsonClient</module>
+    <module>WilsonCore</module>
   </modules>
   <packaging>pom</packaging>
 
