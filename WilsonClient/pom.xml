@@ -11,5 +11,13 @@
 
   <artifactId>WilsonClient</artifactId>
 
+  <dependencies>
+    <dependency>
+      <groupId>com.github.nhirakawa</groupId>
+      <artifactId>WilsonCore</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
 
 </project>
