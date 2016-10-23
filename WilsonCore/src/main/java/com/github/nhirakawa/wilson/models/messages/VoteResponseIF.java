@@ -2,11 +2,15 @@ package com.github.nhirakawa.wilson.models.messages;
 
 import org.immutables.value.Value.Immutable;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-public abstract class AbstractAsdfMessage implements WilsonMessage {
+@JsonTypeName("VoteResponse")
+interface VoteResponseIF extends Message {
 
-  public abstract String getAsdf();
+  long getTerm();
+
+  boolean isVoteGranted();
 }

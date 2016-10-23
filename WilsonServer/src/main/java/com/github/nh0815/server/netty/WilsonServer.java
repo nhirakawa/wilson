@@ -1,4 +1,4 @@
-package com.github.nh0815.server;
+package com.github.nh0815.server.netty;
 
 
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +37,7 @@ public class WilsonServer {
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
-            ch.pipeline().addLast(new JsonObjectDecoder(), new WilsonMessageDecoder(), new WilsonServerHandler());
+            ch.pipeline().addLast(new JsonObjectDecoder(), new WilsonMessageDecoder(), new WilsonMessageHandler());
           }
         });
 
