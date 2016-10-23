@@ -1,11 +1,11 @@
-package com.github.nh0815.server.netty;
+package com.github.nh0815.server;
 
 import java.io.IOException;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nhirakawa.wilson.models.AsdfMessage;
-import com.github.nhirakawa.wilson.models.WilsonMessage;
+import com.github.nhirakawa.wilson.models.messages.WilsonMessage;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

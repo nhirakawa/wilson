@@ -1,4 +1,4 @@
-package com.github.nh0815.server.netty.config;
+package com.github.nh0815.server.config;
 
 import com.github.nhirakawa.wilson.models.config.WilsonCoreModule;
 import com.google.inject.AbstractModule;

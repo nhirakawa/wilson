@@ -1,4 +1,4 @@
-package com.github.nh0815.server.netty;
+package com.github.nh0815.server;
 
 
 import org.apache.logging.log4j.LogManager;

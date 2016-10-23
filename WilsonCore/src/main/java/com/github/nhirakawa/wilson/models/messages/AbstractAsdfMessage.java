@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.models;
+package com.github.nhirakawa.wilson.models.messages;
 
 import org.immutables.value.Value.Immutable;
 
