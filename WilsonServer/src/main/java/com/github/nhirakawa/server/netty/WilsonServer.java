@@ -1,7 +1,7 @@
-package com.github.nh0815.server.netty;
+package com.github.nhirakawa.server.netty;
 
 
-import com.github.nh0815.server.config.WilsonServerModule;
+import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;

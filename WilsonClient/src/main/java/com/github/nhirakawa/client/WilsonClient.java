@@ -1,11 +1,11 @@
-package com.github.nh0815.client;
+package com.github.nhirakawa.client;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.nh0815.client.config.WilsonClientModule;
+import com.github.nhirakawa.client.guice.WilsonClientModule;
 import com.github.nhirakawa.wilson.models.messages.AsdfMessage;
 import com.google.inject.Guice;
 import com.google.inject.Inject;

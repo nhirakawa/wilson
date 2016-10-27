@@ -1,4 +1,4 @@
-package com.github.nh0815.client.config;
+package com.github.nhirakawa.client.guice;
 
 import com.google.inject.AbstractModule;
 
