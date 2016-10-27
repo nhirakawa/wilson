@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nhirakawa.wilson.exceptions.UnknownMessageException;
 import com.github.nhirakawa.wilson.models.messages.Message;
+import com.google.inject.Inject;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,14 +19,15 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 /**
  * Decode a sequence of bytes into a Wilson message
  */
-public class WilsonMessageDecoder extends ByteToMessageDecoder {
+class WilsonMessageDecoder extends ByteToMessageDecoder {
 
   private static final Logger LOG = LogManager.getLogger(WilsonMessageDecoder.class);
 
   private final ObjectMapper objectMapper;
 
-  public WilsonMessageDecoder() {
-    this.objectMapper = new ObjectMapper();
+  @Inject
+  public WilsonMessageDecoder(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
   }
 
   @Override
