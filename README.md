@@ -1,4 +1,4 @@
 # wilson
-An implementation of Raft in Java
+An implementation of Raft
 
 ![volleyball](http://i.imgur.com/kJsNEzB.jpg)
