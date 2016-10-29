@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.netty;
+package com.github.nhirakawa.server.raft;
 
 
 import com.github.nhirakawa.server.config.WilsonConfiguration;

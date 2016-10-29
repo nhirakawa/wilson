@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.github.nhirakawa.server.config.WilsonConfiguration;
-import com.github.nhirakawa.server.netty.WilsonServer;
+import com.github.nhirakawa.server.raft.WilsonServer;
 import com.google.common.io.Resources;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

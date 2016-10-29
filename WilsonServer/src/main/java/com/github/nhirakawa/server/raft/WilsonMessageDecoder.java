@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.netty;
+package com.github.nhirakawa.server.raft;
 
 import java.io.IOException;
 import java.util.List;
