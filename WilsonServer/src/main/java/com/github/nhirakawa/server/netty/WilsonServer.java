@@ -1,6 +1,7 @@
 package com.github.nhirakawa.server.netty;
 
 
+import com.github.nhirakawa.server.config.WilsonConfiguration;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -30,7 +31,8 @@ public class WilsonServer {
   public WilsonServer(@Assisted int port,
                       JsonObjectDecoder jsonObjectDecoder,
                       WilsonMessageDecoder messageDecoder,
-                      WilsonMessageHandler messageHandler) {
+                      WilsonMessageHandler messageHandler,
+                      WilsonConfiguration configuration) {
     this.port = port;
     this.jsonObjectDecoder = jsonObjectDecoder;
     this.messageDecoder = messageDecoder;
