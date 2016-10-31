@@ -2,6 +2,8 @@ package com.github.nhirakawa.server.guice;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -48,6 +50,14 @@ public class WilsonServerModule extends AbstractModule {
   public WilsonConfiguration provideConfiguration(@Named(YAML_OBJECT_MAPPER) ObjectMapper objectMapper) throws IOException {
     String fileString = Resources.toString(Resources.getResource("wilsonserver.yaml"), StandardCharsets.UTF_8);
     return objectMapper.readValue(fileString, WilsonConfiguration.class);
+  }
+
+  @Provides
+  @Singleton
+  public ScheduledExecutorService provideScheduledExecutorService() {
+    ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
+    executor.setRemoveOnCancelPolicy(true);
+    return executor;
   }
 
 }

@@ -1,15 +1,19 @@
 package com.github.nhirakawa.server.raft;
 
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import com.github.nhirakawa.server.config.WilsonConfiguration;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -23,20 +27,26 @@ import io.netty.handler.logging.LoggingHandler;
 public class WilsonServer {
 
   private final int port;
-  private final JsonObjectDecoder jsonObjectDecoder;
-  private final WilsonMessageDecoder messageDecoder;
+  private final Provider<JsonObjectDecoder> jsonObjectDecoderProvider;
+  private final Provider<WilsonMessageDecoder> messageDecoderProvider;
   private final WilsonMessageHandler messageHandler;
+  private final WilsonMessageEncoder messageEncoder;
+  private final ScheduledExecutorService scheduledExecutorService;
 
   @AssistedInject
   public WilsonServer(@Assisted int port,
-                      JsonObjectDecoder jsonObjectDecoder,
-                      WilsonMessageDecoder messageDecoder,
+                      Provider<JsonObjectDecoder> jsonObjectDecoderProvider,
+                      Provider<WilsonMessageDecoder> messageDecoderProvider,
                       WilsonMessageHandler messageHandler,
-                      WilsonConfiguration configuration) {
+                      WilsonMessageEncoder messageEncoder,
+                      WilsonConfiguration configuration,
+                      ScheduledExecutorService scheduledExecutorService) {
     this.port = port;
-    this.jsonObjectDecoder = jsonObjectDecoder;
-    this.messageDecoder = messageDecoder;
+    this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;
+    this.messageDecoderProvider = messageDecoderProvider;
     this.messageHandler = messageHandler;
+    this.messageEncoder = messageEncoder;
+    this.scheduledExecutorService = scheduledExecutorService;
   }
 
   public void start() {
@@ -50,13 +60,14 @@ public class WilsonServer {
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(SocketChannel ch) throws Exception {
-            ch.pipeline().addLast(jsonObjectDecoder, messageDecoder, messageHandler);
+            ch.pipeline().addLast(jsonObjectDecoderProvider.get(), messageDecoderProvider.get(), messageHandler, messageEncoder);
+            scheduledExecutorService.scheduleWithFixedDelay(new HeartbeatPublisher(ch), 0, 100, TimeUnit.MILLISECONDS);
           }
         });
 
     try {
-      ChannelFuture future = serverBootstrap.bind(port).sync();
-      future.channel().closeFuture().sync();
+      Channel ch = serverBootstrap.bind(port).sync().channel();
+      ch.closeFuture().sync();
     } catch (InterruptedException e) {
       e.printStackTrace();
     } finally {
