@@ -4,7 +4,7 @@ package com.github.nhirakawa.server.raft;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.github.nhirakawa.server.config.WilsonConfiguration;
+import com.github.nhirakawa.server.config.Configuration;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -39,7 +39,7 @@ public class WilsonServer {
                       Provider<WilsonMessageDecoder> messageDecoderProvider,
                       WilsonMessageHandler messageHandler,
                       WilsonMessageEncoder messageEncoder,
-                      WilsonConfiguration configuration,
+                      Configuration configuration,
                       ScheduledExecutorService scheduledExecutorService) {
     this.port = port;
     this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;

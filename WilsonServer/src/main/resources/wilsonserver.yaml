@@ -1,7 +1,7 @@
 servers:
-  - address: localhost
+  - host: localhost
     port: 8000
-  - address: localhost
+  - host: localhost
     port: 8001
-  - address: localhost
+  - host: localhost
     port: 8002
