@@ -9,9 +9,9 @@
   <version>1.0-SNAPSHOT</version>
 
   <modules>
-    <module>WilsonServer</module>
-    <module>WilsonClient</module>
-    <module>WilsonCore</module>
+    <module>core</module>
+    <module>server</module>
+    <module>client</module>
   </modules>
   <packaging>pom</packaging>
 
