@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 
@@ -15,18 +16,29 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.codec.json.JsonObjectDecoder;
 
-public final class ObjectEchoClient {
+public class ObjectEchoClient {
 
   private static final Logger LOG = LogManager.getLogger(ObjectEchoClient.class);
 
   private static final String HOST = "localhost";
   private static final int PORT = 8007;
 
-  public static void main(String[] args) throws Exception {
+  private final Provider<JsonObjectDecoder> jsonObjectDecoderProvider;
+  private final Provider<MessageDecoder> messageDecoderProvider;
+  private final Provider<MessageEncoder> messageEncoderProvider;
+
+  @Inject
+  public ObjectEchoClient(Provider<JsonObjectDecoder> jsonObjectDecoderProvider,
+                          Provider<MessageDecoder> messageDecoderProvider,
+                          Provider<MessageEncoder> messageEncoderProvider) {
+    this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;
+    this.messageDecoderProvider = messageDecoderProvider;
+    this.messageEncoderProvider = messageEncoderProvider;
+  }
+
+  public void start() {
     Injector injector = Guice.createInjector(new WilsonServerModule());
     Provider<ObjectEchoClientHandler> objectEchoClientHandlerProvider = injector.getProvider(ObjectEchoClientHandler.class);
 
@@ -41,16 +53,23 @@ public final class ObjectEchoClient {
               LOG.trace("initChannel");
               ChannelPipeline p = ch.pipeline();
               p.addLast(
-                  new ObjectEncoder(),
-                  new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                  jsonObjectDecoderProvider.get(),
+                  messageDecoderProvider.get(),
+                  messageEncoderProvider.get(),
                   objectEchoClientHandlerProvider.get());
             }
           });
 
       // Start the connection attempt.
       b.connect(HOST, PORT).sync().channel().closeFuture().sync();
+    } catch (InterruptedException e) {
+      LOG.error("Client was interrupted", e);
     } finally {
       group.shutdownGracefully();
     }
+  }
+
+  public static void main(String... args) {
+    Guice.createInjector(new WilsonServerModule()).getInstance(ObjectEchoClient.class).start();
   }
 }

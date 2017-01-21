@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.github.nhirakawa.wilson.models.messages.HeartbeatMessage;
+import com.github.nhirakawa.wilson.models.messages.Message;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -27,7 +28,7 @@ public class ObjectEchoClientHandler extends ChannelInboundHandlerAdapter {
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws JsonProcessingException {
     LOG.trace("channelActive");
-    String message = objectMapper.writeValueAsString(HeartbeatMessage.builder().build());
+    Message message = HeartbeatMessage.builder().build();
     LOG.info("created message: {}", message);
     ctx.writeAndFlush(message);
   }
