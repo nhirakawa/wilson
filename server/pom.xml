@@ -11,6 +11,11 @@
 
   <artifactId>wilson-server</artifactId>
 
+  <properties>
+    <netty.version>4.1.6.Final</netty.version>
+    <log4j.version>2.7</log4j.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.github.nhirakawa</groupId>
@@ -20,12 +25,12 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec</artifactId>
-      <version>4.1.6.Final</version>
+      <version>${netty.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
-      <version>4.1.6.Final</version>
+      <version>${netty.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -41,6 +46,16 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-guava</artifactId>
       <version>2.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
   </dependencies>
 

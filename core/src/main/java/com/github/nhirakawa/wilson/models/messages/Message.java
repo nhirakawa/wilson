@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY, property = "type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = AsdfMessage.class, name = "Asdf"),
+    @JsonSubTypes.Type(value = UuidMessage.class, name = "UuidMessage"),
     @JsonSubTypes.Type(value = AppendEntriesRequest.class, name = "AppendEntriesRequest"),
     @JsonSubTypes.Type(value = AppendEntriesResponse.class, name = "AppendEntriesResponse"),
     @JsonSubTypes.Type(value = HeartbeatMessage.class, name = "Heartbeat"),
