@@ -10,13 +10,9 @@ import com.google.inject.Injector;
 import com.google.inject.Provider;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.json.JsonObjectDecoder;
 
 public class ObjectEchoClient {
 
@@ -25,17 +21,12 @@ public class ObjectEchoClient {
   private static final String HOST = "localhost";
   private static final int PORT = 8007;
 
-  private final Provider<JsonObjectDecoder> jsonObjectDecoderProvider;
-  private final Provider<MessageDecoder> messageDecoderProvider;
-  private final Provider<MessageEncoder> messageEncoderProvider;
+  private final WilsonChannelInitializer channelInitializer;
 
   @Inject
-  public ObjectEchoClient(Provider<JsonObjectDecoder> jsonObjectDecoderProvider,
-                          Provider<MessageDecoder> messageDecoderProvider,
-                          Provider<MessageEncoder> messageEncoderProvider) {
-    this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;
-    this.messageDecoderProvider = messageDecoderProvider;
-    this.messageEncoderProvider = messageEncoderProvider;
+  public ObjectEchoClient(Provider<ObjectEchoClientHandler> clientHandlerProvider,
+                          WilsonChannelInitializer.Factory channelInitializerFactory) {
+    this.channelInitializer = channelInitializerFactory.create(clientHandlerProvider.get());
   }
 
   public void start() {
@@ -47,20 +38,8 @@ public class ObjectEchoClient {
       Bootstrap b = new Bootstrap();
       b.group(group)
           .channel(NioSocketChannel.class)
-          .handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(SocketChannel ch) throws Exception {
-              LOG.trace("initChannel");
-              ChannelPipeline p = ch.pipeline();
-              p.addLast(
-                  jsonObjectDecoderProvider.get(),
-                  messageDecoderProvider.get(),
-                  messageEncoderProvider.get(),
-                  objectEchoClientHandlerProvider.get());
-            }
-          });
+          .handler(channelInitializer);
 
-      // Start the connection attempt.
       b.connect(HOST, PORT).sync().channel().closeFuture().sync();
     } catch (InterruptedException e) {
       LOG.error("Client was interrupted", e);

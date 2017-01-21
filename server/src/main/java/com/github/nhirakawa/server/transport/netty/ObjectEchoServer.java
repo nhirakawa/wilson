@@ -9,13 +9,9 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.json.JsonObjectDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -24,17 +20,12 @@ public class ObjectEchoServer {
   private static final Logger LOG = LogManager.getLogger(ObjectEchoServer.class);
   private static final int PORT = 8007;
 
-  private final Provider<MessageEncoder> messageEncoderProvider;
-  private final Provider<JsonObjectDecoder> jsonObjectDecoderProvider;
-  private final Provider<MessageDecoder> messageDecoderProvider;
+  private final WilsonChannelInitializer channelInitializer;
 
   @Inject
-  public ObjectEchoServer(Provider<MessageEncoder> messageEncoderProvider,
-                          Provider<JsonObjectDecoder> jsonObjectDecoderProvider,
-                          Provider<MessageDecoder> messageDecoderProvider) {
-    this.messageEncoderProvider = messageEncoderProvider;
-    this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;
-    this.messageDecoderProvider = messageDecoderProvider;
+  public ObjectEchoServer(Provider<ObjectEchoServerHandler> echoServerHandlerProvider,
+                          WilsonChannelInitializer.Factory channelInitializerFactory) {
+    this.channelInitializer = channelInitializerFactory.create(echoServerHandlerProvider.get());
   }
 
   public void start() {
@@ -46,18 +37,7 @@ public class ObjectEchoServer {
       b.group(bossGroup, workerGroup)
           .channel(NioServerSocketChannel.class)
           .handler(new LoggingHandler(LogLevel.INFO))
-          .childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(SocketChannel ch) throws Exception {
-              LOG.trace("initChannel");
-              ChannelPipeline p = ch.pipeline();
-              p.addLast(
-                  jsonObjectDecoderProvider.get(),
-                  messageDecoderProvider.get(),
-                  messageEncoderProvider.get(),
-                  new ObjectEchoServerHandler());
-            }
-          });
+          .childHandler(channelInitializer);
 
       b.bind(PORT).sync().channel().closeFuture().sync();
     } catch (InterruptedException e) {
