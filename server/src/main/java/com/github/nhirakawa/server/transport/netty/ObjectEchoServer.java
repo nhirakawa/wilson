@@ -1,5 +1,10 @@
 package com.github.nhirakawa.server.transport.netty;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.Properties;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,7 +50,20 @@ public class ObjectEchoServer {
     }
   }
 
-  public static void main(String... args) {
+  public static void main(String... args) throws IOException {
+    String configurationLocation = "conf/wilsonserver.properties";
+    if (args.length > 0) {
+      configurationLocation = args[0];
+    }
+
+    Properties properties = new Properties();
+    properties.load(new FileInputStream(configurationLocation));
+    Properties systemProperties = System.getProperties();
+
+    for (Entry<Object, Object> entry : properties.entrySet()) {
+      systemProperties.putIfAbsent(entry.getKey(), entry.getValue());
+    }
+
     Guice.createInjector(new WilsonServerModule()).getInstance(ObjectEchoServer.class).start();
   }
 }
