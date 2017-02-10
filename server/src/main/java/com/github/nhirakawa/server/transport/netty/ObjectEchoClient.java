@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Provider;
 
 import io.netty.bootstrap.Bootstrap;
@@ -30,9 +29,6 @@ public class ObjectEchoClient {
   }
 
   public void start() {
-    Injector injector = Guice.createInjector(new WilsonServerModule());
-    Provider<ObjectEchoClientHandler> objectEchoClientHandlerProvider = injector.getProvider(ObjectEchoClientHandler.class);
-
     EventLoopGroup group = new NioEventLoopGroup();
     try {
       Bootstrap b = new Bootstrap();
