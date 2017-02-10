@@ -6,9 +6,9 @@ import org.apache.logging.log4j.Logger;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-public class ObjectEchoServerHandler extends ChannelInboundHandlerAdapter {
+public class WilsonMessageHandler extends ChannelInboundHandlerAdapter {
 
-  private static final Logger LOG = LogManager.getLogger(ObjectEchoServerHandler.class);
+  private static final Logger LOG = LogManager.getLogger(WilsonMessageHandler.class);
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {

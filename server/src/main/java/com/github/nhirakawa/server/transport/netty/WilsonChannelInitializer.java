@@ -19,14 +19,14 @@ public class WilsonChannelInitializer extends ChannelInitializer<SocketChannel> 
   private final Provider<MessageDecoder> messageDecoderProvider;
   private final Provider<MessageEncoder> messageEncoderProvider;
   private final Provider<JsonObjectDecoder> jsonObjectDecoderProvider;
-  private final Provider<ObjectEchoServerHandler> serverHandlerProvider;
+  private final Provider<WilsonMessageHandler> serverHandlerProvider;
 
   @Inject
   public WilsonChannelInitializer(
       Provider<MessageDecoder> messageDecoderProvider,
       Provider<MessageEncoder> messageEncoderProvider,
       Provider<JsonObjectDecoder> jsonObjectDecoderProvider,
-      Provider<ObjectEchoServerHandler> serverHandlerProvider) {
+      Provider<WilsonMessageHandler> serverHandlerProvider) {
     this.messageDecoderProvider = messageDecoderProvider;
     this.messageEncoderProvider = messageEncoderProvider;
     this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;
