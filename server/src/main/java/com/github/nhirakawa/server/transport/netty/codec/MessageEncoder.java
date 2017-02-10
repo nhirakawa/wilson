@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.transport.netty;
+package com.github.nhirakawa.server.transport.netty.codec;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nhirakawa.wilson.models.messages.Message;

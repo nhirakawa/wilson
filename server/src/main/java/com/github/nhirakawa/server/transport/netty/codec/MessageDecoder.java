@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.transport.netty;
+package com.github.nhirakawa.server.transport.netty.codec;
 
 import java.io.IOException;
 import java.util.List;
