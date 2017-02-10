@@ -3,20 +3,22 @@ package com.github.nhirakawa.server.guice;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.javaprop.JavaPropsMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.github.nhirakawa.server.config.Configuration;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 public class WilsonServerModule extends AbstractModule {
-
-  public static final String DEFAULT_OBJECT_MAPPER = "default.object.mapper";
 
   @Override
   protected void configure() {
@@ -31,7 +33,6 @@ public class WilsonServerModule extends AbstractModule {
 
   @Provides
   @Singleton
-  @Named(DEFAULT_OBJECT_MAPPER)
   public ObjectMapper provideObjectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new GuavaModule());
@@ -44,6 +45,16 @@ public class WilsonServerModule extends AbstractModule {
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors());
     executor.setRemoveOnCancelPolicy(true);
     return executor;
+  }
+
+  @Provides
+  @Singleton
+  public Retryer<Void> provideRetyrer() {
+    return RetryerBuilder.<Void>newBuilder()
+        .withWaitStrategy(WaitStrategies.fixedWait(5, TimeUnit.SECONDS))
+        .withStopStrategy(StopStrategies.stopAfterAttempt(5))
+        .retryIfExceptionOfType(IOException.class)
+        .build();
   }
 
 }

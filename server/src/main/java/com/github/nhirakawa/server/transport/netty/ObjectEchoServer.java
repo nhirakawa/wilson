@@ -4,15 +4,15 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import com.github.nhirakawa.server.config.Configuration;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -21,14 +21,20 @@ import io.netty.handler.logging.LoggingHandler;
 
 public class ObjectEchoServer {
 
-  private static final Logger LOG = LogManager.getLogger(ObjectEchoServer.class);
-  private static final int PORT = 8007;
-
+  private final Configuration configuration;
   private final WilsonChannelInitializer channelInitializer;
+  private final ClientConnectionGenerator connectionGenerator;
+  private final HeartbeatTask heartbeatTask;
 
   @Inject
-  public ObjectEchoServer(WilsonChannelInitializer channelInitializer) {
+  public ObjectEchoServer(WilsonChannelInitializer channelInitializer,
+                          ClientConnectionGenerator connectionGenerator,
+                          HeartbeatTask heartbeatTask,
+                          Configuration configuration) {
     this.channelInitializer = channelInitializer;
+    this.connectionGenerator = connectionGenerator;
+    this.heartbeatTask = heartbeatTask;
+    this.configuration = configuration;
   }
 
   public void start() {
@@ -41,9 +47,12 @@ public class ObjectEchoServer {
           .handler(new LoggingHandler(LogLevel.INFO))
           .childHandler(channelInitializer);
 
-      b.bind(PORT).sync().channel().closeFuture().sync();
-    } catch (InterruptedException e) {
-      LOG.error("Server was interrupted", e);
+      Channel channel = b.bind(configuration.getLocalAddress().getPort()).sync().channel();
+      heartbeatTask.start();
+      connectionGenerator.generate();
+      channel.closeFuture().sync();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e);
     } finally {
       bossGroup.shutdownGracefully();
       workerGroup.shutdownGracefully();

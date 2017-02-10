@@ -1,5 +1,8 @@
 package com.github.nhirakawa.server.transport.netty.codec;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.nhirakawa.wilson.models.messages.Message;
 import com.google.inject.Inject;
@@ -10,6 +13,8 @@ import io.netty.handler.codec.MessageToByteEncoder;
 
 public class MessageEncoder extends MessageToByteEncoder<Message> {
 
+  private static final Logger LOG = LogManager.getLogger(MessageEncoder.class);
+
   private final ObjectMapper objectMapper;
 
   @Inject
@@ -19,6 +24,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 
   @Override
   protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
+//    LOG.trace("Encoding {} as bytes", msg);
     out.writeBytes(objectMapper.writeValueAsBytes(msg));
   }
 }
