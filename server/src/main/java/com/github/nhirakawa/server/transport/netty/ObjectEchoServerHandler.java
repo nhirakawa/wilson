@@ -11,10 +11,16 @@ public class ObjectEchoServerHandler extends ChannelInboundHandlerAdapter {
   private static final Logger LOG = LogManager.getLogger(ObjectEchoServerHandler.class);
 
   @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    super.channelActive(ctx);
+    LOG.trace("channelActive");
+  }
+
+  @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     LOG.trace("channelRead");
     LOG.info("received message of type {}:{}", msg.getClass().getSimpleName(), msg);
-    LOG.info("sending message of type{}:{}", msg.getClass().getSimpleName(), msg);
+    LOG.info("sending message of type {}:{}", msg.getClass().getSimpleName(), msg);
     ctx.write(msg);
   }
 
