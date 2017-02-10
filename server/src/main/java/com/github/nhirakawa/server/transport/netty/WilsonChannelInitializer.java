@@ -5,11 +5,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.github.nhirakawa.server.transport.netty.codec.MessageDecoder;
 import com.github.nhirakawa.server.transport.netty.codec.MessageEncoder;
+import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.json.JsonObjectDecoder;
@@ -21,18 +19,18 @@ public class WilsonChannelInitializer extends ChannelInitializer<SocketChannel> 
   private final Provider<MessageDecoder> messageDecoderProvider;
   private final Provider<MessageEncoder> messageEncoderProvider;
   private final Provider<JsonObjectDecoder> jsonObjectDecoderProvider;
-  private final ChannelInboundHandlerAdapter handler;
+  private final Provider<ObjectEchoServerHandler> serverHandlerProvider;
 
-  @AssistedInject
+  @Inject
   public WilsonChannelInitializer(
-      @Assisted ChannelInboundHandlerAdapter handler,
       Provider<MessageDecoder> messageDecoderProvider,
       Provider<MessageEncoder> messageEncoderProvider,
-      Provider<JsonObjectDecoder> jsonObjectDecoderProvider) {
-    this.handler = handler;
+      Provider<JsonObjectDecoder> jsonObjectDecoderProvider,
+      Provider<ObjectEchoServerHandler> serverHandlerProvider) {
     this.messageDecoderProvider = messageDecoderProvider;
     this.messageEncoderProvider = messageEncoderProvider;
     this.jsonObjectDecoderProvider = jsonObjectDecoderProvider;
+    this.serverHandlerProvider = serverHandlerProvider;
   }
 
   @Override
@@ -42,10 +40,6 @@ public class WilsonChannelInitializer extends ChannelInitializer<SocketChannel> 
         jsonObjectDecoderProvider.get(),
         messageDecoderProvider.get(),
         messageEncoderProvider.get(),
-        handler);
-  }
-
-  public interface Factory {
-    WilsonChannelInitializer create(ChannelInboundHandlerAdapter handler);
+        serverHandlerProvider.get());
   }
 }

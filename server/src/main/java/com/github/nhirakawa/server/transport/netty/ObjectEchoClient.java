@@ -4,11 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.github.nhirakawa.server.guice.WilsonServerModule;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatMessage;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -23,9 +24,8 @@ public class ObjectEchoClient {
   private final WilsonChannelInitializer channelInitializer;
 
   @Inject
-  public ObjectEchoClient(Provider<ObjectEchoClientHandler> clientHandlerProvider,
-                          WilsonChannelInitializer.Factory channelInitializerFactory) {
-    this.channelInitializer = channelInitializerFactory.create(clientHandlerProvider.get());
+  public ObjectEchoClient(WilsonChannelInitializer channelInitializer) {
+    this.channelInitializer = channelInitializer;
   }
 
   public void start() {
@@ -36,7 +36,9 @@ public class ObjectEchoClient {
           .channel(NioSocketChannel.class)
           .handler(channelInitializer);
 
-      b.connect(HOST, PORT).sync().channel().closeFuture().sync();
+      Channel channel = b.connect(HOST, PORT).sync().channel();
+      channel.writeAndFlush(HeartbeatMessage.builder().build());
+      channel.close();
     } catch (InterruptedException e) {
       LOG.error("Client was interrupted", e);
     } finally {

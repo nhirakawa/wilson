@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import com.github.nhirakawa.server.guice.WilsonServerModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -23,9 +22,8 @@ public class ObjectEchoServer {
   private final WilsonChannelInitializer channelInitializer;
 
   @Inject
-  public ObjectEchoServer(Provider<ObjectEchoServerHandler> echoServerHandlerProvider,
-                          WilsonChannelInitializer.Factory channelInitializerFactory) {
-    this.channelInitializer = channelInitializerFactory.create(echoServerHandlerProvider.get());
+  public ObjectEchoServer(WilsonChannelInitializer channelInitializer) {
+    this.channelInitializer = channelInitializer;
   }
 
   public void start() {

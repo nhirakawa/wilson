@@ -20,8 +20,6 @@ public class ObjectEchoServerHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     LOG.trace("channelRead");
     LOG.info("received message of type {}:{}", msg.getClass().getSimpleName(), msg);
-    LOG.info("sending message of type {}:{}", msg.getClass().getSimpleName(), msg);
-    ctx.write(msg);
   }
 
   @Override
