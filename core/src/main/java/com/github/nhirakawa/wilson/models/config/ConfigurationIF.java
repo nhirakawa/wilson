@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.config;
+package com.github.nhirakawa.wilson.models.config;
 
 import java.util.Collection;
 

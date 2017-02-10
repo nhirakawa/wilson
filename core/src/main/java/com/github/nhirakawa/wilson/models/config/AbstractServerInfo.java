@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.config;
+package com.github.nhirakawa.wilson.models.config;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
