@@ -38,9 +38,6 @@ public class ObjectEchoClientHandler extends ChannelInboundHandlerAdapter {
     LOG.trace("channelRead");
     LOG.info("received message: {}", msg);
     ctx.close();
-//    Message message = UuidMessage.builder().build();
-//    LOG.info("sending message: {}", msg);
-//    ctx.write(objectMapper.writeValueAsString(msg));
   }
 
   @Override
