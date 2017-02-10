@@ -29,7 +29,6 @@ public class ObjectEchoServer {
   }
 
   public void start() {
-
     EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup workerGroup = new NioEventLoopGroup();
     try {
