@@ -19,7 +19,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-public class ObjectEchoServer {
+public class WilsonServer {
 
   private final Configuration configuration;
   private final WilsonChannelInitializer channelInitializer;
@@ -27,10 +27,10 @@ public class ObjectEchoServer {
   private final HeartbeatTask heartbeatTask;
 
   @Inject
-  public ObjectEchoServer(WilsonChannelInitializer channelInitializer,
-                          ClientConnectionGenerator connectionGenerator,
-                          HeartbeatTask heartbeatTask,
-                          Configuration configuration) {
+  public WilsonServer(WilsonChannelInitializer channelInitializer,
+                      ClientConnectionGenerator connectionGenerator,
+                      HeartbeatTask heartbeatTask,
+                      Configuration configuration) {
     this.channelInitializer = channelInitializer;
     this.connectionGenerator = connectionGenerator;
     this.heartbeatTask = heartbeatTask;
@@ -73,6 +73,6 @@ public class ObjectEchoServer {
       systemProperties.putIfAbsent(entry.getKey(), entry.getValue());
     }
 
-    Guice.createInjector(new WilsonServerModule()).getInstance(ObjectEchoServer.class).start();
+    Guice.createInjector(new WilsonServerModule()).getInstance(WilsonServer.class).start();
   }
 }
