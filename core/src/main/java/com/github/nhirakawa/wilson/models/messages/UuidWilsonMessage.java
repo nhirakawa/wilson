@@ -11,7 +11,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @Immutable
 @WilsonStyle
 @JsonTypeName("UuidMessage")
-public interface UuidMessageIF extends Message {
+public interface UuidWilsonMessage extends SerializedWilsonMessage {
 
   @Value.Default
   default String getUuid() {

@@ -7,10 +7,10 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-@JsonTypeName("AppendEntriesResponse")
-interface AppendEntriesResponseIF extends Message {
+@JsonTypeName("VoteResponse")
+public interface VoteResponse extends SerializedWilsonMessage {
 
   long getTerm();
 
-  boolean isSuccess();
+  boolean isVoteGranted();
 }

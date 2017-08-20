@@ -7,7 +7,12 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-@JsonTypeName("Heartbeat")
-interface HeartbeatMessageIF extends Message {
+@JsonTypeName("VoteRequest")
+public interface VoteRequest extends SerializedWilsonMessage {
 
+  long getTerm();
+
+  long getLastLogIndex();
+
+  long getLastLogTerm();
 }
