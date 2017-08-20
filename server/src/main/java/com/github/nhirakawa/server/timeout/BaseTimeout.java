@@ -7,7 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
+import com.github.nhirakawa.server.config.ClusterMember;
+import com.github.nhirakawa.server.guice.LocalMember;
 import com.google.common.base.Preconditions;
 
 abstract class BaseTimeout {
@@ -18,18 +21,25 @@ abstract class BaseTimeout {
 
   private final ScheduledExecutorService scheduledExecutorService;
   private final long period;
+  private final String serverId;
 
   private Optional<ScheduledFuture<?>> scheduledFuture;
 
   protected BaseTimeout(ScheduledExecutorService scheduledExecutorService,
-                        long period) {
+                        long period,
+                        @LocalMember ClusterMember clusterMember) {
     this.scheduledExecutorService = scheduledExecutorService;
     this.period = period;
+    this.serverId = clusterMember.getServerId();
 
     this.scheduledFuture = Optional.empty();
   }
 
   protected abstract void doTimeout() throws Exception;
+
+  protected long getPeriod() {
+    return period;
+  }
 
   public void start() {
     Preconditions.checkState(
@@ -53,10 +63,13 @@ abstract class BaseTimeout {
   }
 
   private void doSafeTimeout() {
+    MDC.put("serverId", serverId);
     try {
       doTimeout();
     } catch (Exception e) {
       LOG.error("Timeout encountered exception", e);
+    } finally {
+      MDC.remove("serverId");
     }
   }
 }

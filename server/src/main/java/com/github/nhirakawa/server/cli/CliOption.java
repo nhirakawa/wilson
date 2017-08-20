@@ -16,25 +16,30 @@ public enum CliOption {
           .type(String.class)
           .build()
   ),
-  DEVELOPMENT_MODE(
-      Option.builder("d")
-          .argName("developmentMode")
-          .longOpt("development-mode")
-          .desc("Allow extra configuration options for local development")
+
+  HOST(
+      Option.builder("host")
+          .argName("host")
+          .longOpt("host")
+          .desc("Host of local cluster member")
           .required(false)
-          .hasArg(false)
+          .hasArg()
+          .numberOfArgs(1)
+          .type(String.class)
           .build()
   ),
-  LOCAL_PORTS(
-      Option.builder("p")
-          .argName("localPorts")
-          .longOpt("local-ports")
-          .desc("Specify ports for multiple cluster members (in development mode only)")
-          .required(false)
-          .hasArgs()
-          .valueSeparator(',')
+
+  PORT(
+      Option.builder("port")
+          .argName("port")
+          .longOpt("port")
+          .desc("Port of local cluster member")
+          .hasArg()
+          .numberOfArgs(1)
+          .type(Integer.class)
           .build()
   ),
+
   LOCAL_MODE(
       Option.builder("local")
           .argName("local mode")

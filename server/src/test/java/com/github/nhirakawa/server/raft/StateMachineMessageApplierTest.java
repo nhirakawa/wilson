@@ -1,7 +1,9 @@
 package com.github.nhirakawa.server.raft;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -21,7 +23,9 @@ import com.github.nhirakawa.server.config.Configuration;
 import com.github.nhirakawa.server.config.ImmutableClusterMember;
 import com.github.nhirakawa.server.config.ImmutableConfiguration;
 import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.wilson.models.messages.ImmutableElectionTimeoutMessage;
+import com.github.nhirakawa.wilson.models.messages.ImmutableHeartbeatTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.ImmutableLeaderTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.ImmutableVoteRequest;
 import com.github.nhirakawa.wilson.models.messages.ImmutableVoteResponse;
@@ -49,9 +53,10 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itDoesNothingWhenLeaderTimeoutAndLeaderIsValid() throws Exception {
+    long leaderTimeout = 5L;
     ImmutableConfiguration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setLeaderTimeout(5L)
+        .setLeaderTimeout(leaderTimeout)
         .build();
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(
         ImmutableWilsonState.builder()
@@ -63,6 +68,7 @@ public class StateMachineMessageApplierTest {
 
     LeaderTimeoutMessage leaderTimeoutMessage = ImmutableLeaderTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(101L))
+        .setLeaderTimeout(leaderTimeout)
         .build();
 
     stateMachineMessageApplier.apply(leaderTimeoutMessage);
@@ -74,10 +80,11 @@ public class StateMachineMessageApplierTest {
   }
 
   @Test
-  public void itTransitionsToCandidateWhenLeaderTimeoutAndLeaderIsInvalid() throws Exception {
+  public void itTransitionsToCandidateWhenLeaderTimeoutAndLeaderIsInvalid() {
+    long leaderTimeout = 5L;
     ImmutableConfiguration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setLeaderTimeout(5L)
+        .setLeaderTimeout(leaderTimeout)
         .build();
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(
         ImmutableWilsonState.builder()
@@ -96,6 +103,7 @@ public class StateMachineMessageApplierTest {
 
     LeaderTimeoutMessage leaderTimeoutMessage = ImmutableLeaderTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(120L))
+        .setLeaderTimeout(leaderTimeout)
         .build();
     stateMachineMessageApplier.apply(leaderTimeoutMessage);
 
@@ -116,13 +124,18 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itDoesNothingWhenLeaderTimeoutWhileCandidate() throws InterruptedException, MalformedURLException, JsonProcessingException, URISyntaxException, ExecutionException {
+    long leaderTimeout = 5L;
+
     ImmutableConfiguration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setLeaderTimeout(5L)
+        .setLeaderTimeout(leaderTimeout)
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setLeaderState(LeaderState.CANDIDATE)
         .setLastHeartbeatReceived(Instant.ofEpochMilli(10L))
+        .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastVotedFor(LOCAL_SERVER)
+        .setLastElectionStarted(Instant.now())
         .build();
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
 
@@ -130,6 +143,7 @@ public class StateMachineMessageApplierTest {
 
     LeaderTimeoutMessage leaderTimeoutMessage = ImmutableLeaderTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(100L))
+        .setLeaderTimeout(leaderTimeout)
         .build();
     stateMachineMessageApplier.apply(leaderTimeoutMessage);
 
@@ -139,19 +153,23 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itDoesNothingWhenLeaderTimeoutWhileLeader() throws InterruptedException, MalformedURLException, JsonProcessingException, URISyntaxException, ExecutionException {
+    long leaderTimeout = 5L;
+
     ImmutableConfiguration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setLeaderTimeout(5L)
+        .setLeaderTimeout(leaderTimeout)
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setLastHeartbeatReceived(Instant.ofEpochMilli(10L))
         .setLeaderState(LeaderState.LEADER)
+        .setCurrentLeader(LOCAL_SERVER)
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier stateMachineMessageApplier = buildMessageApplier(configuration, wilsonStateReference);
     LeaderTimeoutMessage leaderTimeoutMessage = ImmutableLeaderTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(100L))
+        .setLeaderTimeout(leaderTimeout)
         .build();
 
     stateMachineMessageApplier.apply(leaderTimeoutMessage);
@@ -168,8 +186,10 @@ public class StateMachineMessageApplierTest {
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setLeaderState(LeaderState.CANDIDATE)
-        .setCurrentTerm(1L)
+        .setCurrentTerm(2L)
         .setLastVotedFor(LOCAL_SERVER)
+        .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastElectionStarted(Instant.now())
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
@@ -181,12 +201,12 @@ public class StateMachineMessageApplierTest {
         .build();
 
     VoteResponse voteResponse = stateMachineMessageApplier.apply(voteRequest, OTHER_SERVER);
-    assertThat(voteResponse.getTerm()).isEqualTo(1L);
+    assertThat(voteResponse.getTerm()).isEqualTo(2L);
     assertThat(voteResponse.isVoteGranted()).isFalse();
 
     WilsonState updatedWilsonState = wilsonStateReference.get();
     assertThat(updatedWilsonState.getLastVotedFor()).isPresent().contains(LOCAL_SERVER);
-    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(1L);
+    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
     assertThat(updatedWilsonState.getLeaderState()).isEqualTo(LeaderState.CANDIDATE);
   }
 
@@ -292,9 +312,11 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itNoOpsIfElectionTimeoutWhenFollower() {
+    long electionTimeout = 5L;
+
     Configuration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setElectionTimeout(5L)
+        .setElectionTimeout(electionTimeout)
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setLeaderState(LeaderState.FOLLOWER)
@@ -306,6 +328,7 @@ public class StateMachineMessageApplierTest {
     StateMachineMessageApplier applier = buildMessageApplier(configuration, wilsonStateReference);
     ElectionTimeoutMessage electionTimeoutMessage = ImmutableElectionTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(100L))
+        .setElectionTimeout(electionTimeout)
         .build();
 
     applier.apply(electionTimeoutMessage);
@@ -315,20 +338,23 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itNoOpsIfElectionTimeoutWhenLeader() {
+    long electionTimeout = 5L;
+
     Configuration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setElectionTimeout(5L)
+        .setElectionTimeout(electionTimeout)
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setLeaderState(LeaderState.LEADER)
+        .setCurrentLeader(LOCAL_SERVER)
         .setCurrentTerm(2L)
-        .setLastElectionStarted(Instant.ofEpochMilli(50L))
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier applier = buildMessageApplier(configuration, wilsonStateReference);
     ElectionTimeoutMessage electionTimeoutMessage = ImmutableElectionTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(100L))
+        .setElectionTimeout(electionTimeout)
         .build();
 
     applier.apply(electionTimeoutMessage);
@@ -338,20 +364,25 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itNoOpsIfElectionHasNotTimedOutYet() {
+    long electionTimeout = 5L;
+
     Configuration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
-        .setElectionTimeout(5L)
+        .setElectionTimeout(electionTimeout)
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setCurrentTerm(2L)
         .setLeaderState(LeaderState.CANDIDATE)
         .setLastElectionStarted(Instant.ofEpochMilli(100L))
+        .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastVotedFor(LOCAL_SERVER)
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier applier = buildMessageApplier(configuration, wilsonStateReference);
     ElectionTimeoutMessage electionTimeoutMessage = ImmutableElectionTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(101L))
+        .setElectionTimeout(electionTimeout)
         .build();
 
     applier.apply(electionTimeoutMessage);
@@ -361,15 +392,19 @@ public class StateMachineMessageApplierTest {
 
   @Test
   public void itTransitionsToFollowerWhenElectionTimeoutAsCandidate() {
+    long electionTimeout = 5L;
+
     Configuration configuration = ImmutableConfiguration.builder()
         .setLocalMember(LOCAL_SERVER)
         .setLeaderTimeout(5L)
-        .setElectionTimeout(5L)
+        .setElectionTimeout(electionTimeout)
         .build();
     ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
         .setCurrentTerm(1L)
         .setLastElectionStarted(Instant.ofEpochMilli(100L))
         .setLeaderState(LeaderState.CANDIDATE)
+        .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastVotedFor(LOCAL_SERVER)
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
@@ -377,6 +412,7 @@ public class StateMachineMessageApplierTest {
 
     ElectionTimeoutMessage electionTimeoutMessage = ImmutableElectionTimeoutMessage.builder()
         .setTimestamp(Instant.ofEpochMilli(106L))
+        .setElectionTimeout(electionTimeout)
         .build();
     applier.apply(electionTimeoutMessage);
 
@@ -394,7 +430,10 @@ public class StateMachineMessageApplierTest {
         .build();
     ImmutableWilsonState immutableWilsonState = ImmutableWilsonState.builder()
         .setLeaderState(LeaderState.CANDIDATE)
+        .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastVotedFor(LOCAL_SERVER)
         .setCurrentTerm(2L)
+        .setLastElectionStarted(Instant.now())
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(immutableWilsonState);
@@ -429,6 +468,7 @@ public class StateMachineMessageApplierTest {
         .setCurrentTerm(2L)
         .setLastVotedFor(LOCAL_SERVER)
         .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastElectionStarted(Instant.now())
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
@@ -461,6 +501,7 @@ public class StateMachineMessageApplierTest {
         .addVotesReceivedFrom(LOCAL_SERVER)
         .setLastVotedFor(LOCAL_SERVER)
         .setCurrentTerm(2L)
+        .setLastElectionStarted(Instant.now())
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
@@ -499,6 +540,7 @@ public class StateMachineMessageApplierTest {
         .addVotesReceivedFrom(LOCAL_SERVER, OTHER_SERVER)
         .setLastVotedFor(LOCAL_SERVER)
         .setCurrentTerm(2L)
+        .setLastElectionStarted(Instant.now())
         .build();
 
     AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
@@ -528,6 +570,7 @@ public class StateMachineMessageApplierTest {
         .setLeaderState(LeaderState.CANDIDATE)
         .addVotesReceivedFrom(LOCAL_SERVER)
         .setLastVotedFor(LOCAL_SERVER)
+        .setLastElectionStarted(Instant.now())
         .setCurrentTerm(2L)
         .build();
 
@@ -546,6 +589,51 @@ public class StateMachineMessageApplierTest {
     assertThat(updatedWilsonState.getLeaderState()).isEqualTo(LeaderState.FOLLOWER);
     assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(3L);
     assertThat(updatedWilsonState.getLastVotedFor()).contains(OTHER_SERVER);
+  }
+
+  @Test
+  public void itSendsHeartbeatRequestAfterTimeoutWhenLeader() {
+    Configuration configuration = ImmutableConfiguration.builder()
+        .setLocalMember(LOCAL_SERVER)
+        .addClusterMembers(LOCAL_SERVER, OTHER_SERVER)
+        .build();
+    ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
+        .setCurrentLeader(LOCAL_SERVER)
+        .setLeaderState(LeaderState.LEADER)
+        .build();
+
+    AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
+    StateMachineMessageApplier applier = buildMessageApplier(configuration, wilsonStateReference);
+
+    ImmutableHeartbeatTimeoutMessage timeoutMessage = ImmutableHeartbeatTimeoutMessage.builder()
+        .setHeartbeatTimeout(1L)
+        .build();
+
+    applier.apply(timeoutMessage);
+
+    verify(eventBus).post(any(HeartbeatRequest.class));
+  }
+
+  @Test
+  public void itNoOpsIfHeartbeatTimeoutAndNotLeader() {
+    Configuration configuration = ImmutableConfiguration.builder()
+        .setLocalMember(LOCAL_SERVER)
+        .addClusterMembers(LOCAL_SERVER, OTHER_SERVER)
+        .build();
+    ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
+        .setLeaderState(LeaderState.FOLLOWER)
+        .build();
+
+    AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
+    StateMachineMessageApplier applier = buildMessageApplier(configuration, wilsonStateReference);
+
+    ImmutableHeartbeatTimeoutMessage timeoutMessage = ImmutableHeartbeatTimeoutMessage.builder()
+        .setHeartbeatTimeout(1L)
+        .build();
+
+    applier.apply(timeoutMessage);
+
+    verifyZeroInteractions(eventBus);
   }
 
   private StateMachineMessageApplier buildMessageApplier(Configuration configuration,

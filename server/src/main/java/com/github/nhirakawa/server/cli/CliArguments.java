@@ -8,6 +8,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.Ints;
 
 public class CliArguments {
 
@@ -41,9 +42,30 @@ public class CliArguments {
     return commandLine.hasOption(CliOption.LOCAL_MODE.getOpt());
   }
 
+  public String getHost() {
+    return Optional.ofNullable(commandLine.getOptionValue(CliOption.HOST.getOpt())).orElse("localhost");
+  }
+
+  public int getPort() {
+    return Optional.ofNullable(commandLine.getOptionValue(CliOption.PORT.getOpt())).map(Integer::parseInt).orElse(8000);
+  }
+
   private static void validate(CommandLine commandLine) {
-    boolean localPortsAndDevelopmentMode = !commandLine.hasOption(CliOption.LOCAL_PORTS.getOpt()) || commandLine.hasOption(CliOption.DEVELOPMENT_MODE.getOpt());
-    Preconditions.checkArgument(localPortsAndDevelopmentMode, "Local ports can only be set in development mode");
+    boolean hasLocalMode = commandLine.hasOption(CliOption.LOCAL_MODE.getOpt());
+    boolean hasHost = commandLine.hasOption(CliOption.HOST.getOpt());
+    boolean hasPort = commandLine.hasOption(CliOption.PORT.getOpt());
+
+    if (hasLocalMode) {
+      Preconditions.checkArgument(!hasHost, "Cannot set host if running cluster locally");
+      Preconditions.checkArgument(!hasPort, "Cannot set port if running cluster locally");
+    }
+
+    if (hasPort) {
+      String maybePort = commandLine.getOptionValue(CliOption.PORT.getOpt());
+      Integer port = Ints.tryParse(maybePort);
+      Preconditions.checkArgument(port != null, "Could not parse port %s as integer", maybePort);
+      Preconditions.checkArgument(port >= 0, "Port must be greater than or equal to 0 (%s)", maybePort);
+    }
   }
 
 }

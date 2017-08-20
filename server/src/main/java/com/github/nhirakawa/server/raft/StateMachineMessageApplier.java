@@ -1,21 +1,20 @@
 package com.github.nhirakawa.server.raft;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.nhirakawa.server.config.ClusterMember;
 import com.github.nhirakawa.server.config.Configuration;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
+import com.github.nhirakawa.wilson.models.messages.ImmutableHeartbeatRequest;
+import com.github.nhirakawa.wilson.models.messages.ImmutableHeartbeatTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.ImmutableVoteRequest;
 import com.github.nhirakawa.wilson.models.messages.ImmutableVoteResponse;
 import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
@@ -44,7 +43,7 @@ public class StateMachineMessageApplier {
     this.eventBus = eventBus;
   }
 
-  public synchronized void apply(LeaderTimeoutMessage leaderTimeoutMessage) throws InterruptedException, MalformedURLException, URISyntaxException, JsonProcessingException, ExecutionException {
+  public synchronized void apply(LeaderTimeoutMessage leaderTimeoutMessage) {
     WilsonState currentState = wilsonStateReference.get();
     if (currentState.getLeaderState() != LeaderState.FOLLOWER) {
       return;
@@ -58,6 +57,7 @@ public class StateMachineMessageApplier {
           .setLastLogIndex(updatedWilsonState.getLastLogIndex())
           .build();
 
+      LOG.trace("Requesting votes with {}", voteRequest);
       eventBus.post(voteRequest);
     }
   }
@@ -68,23 +68,25 @@ public class StateMachineMessageApplier {
     if (wilsonState.getLeaderState() != LeaderState.FOLLOWER) {
       return wilsonState;
     }
-    Instant leaderDeadline = getLeaderTimeoutInstant(wilsonState);
+    Instant leaderDeadline = wilsonState.getLastHeartbeatReceived().plus(leaderTimeoutMessage.getLeaderTimeout(), ChronoUnit.MILLIS);
 
     // We received a heartbeat before the last deadline
-    if (leaderDeadline.isAfter(leaderTimeoutMessage.getTimestamp())) {
+    Instant messageTimestamp = leaderTimeoutMessage.getTimestamp();
+    if (leaderDeadline.isAfter(messageTimestamp)) {
       return wilsonState;
     }
 
-    // Leader has timed out, transition to candidate
-    return wilsonState
-        .withCurrentTerm(wilsonState.getCurrentTerm() + 1L)
-        .withLeaderState(LeaderState.CANDIDATE)
-        .withLastVotedFor(localMember)
-        .withVotesReceivedFrom(localMember);
-  }
+    LOG.debug("Last heartbeat from leader received at {} but leader timeout at {}. Transitioning to candidate", leaderDeadline, messageTimestamp);
 
-  private Instant getLeaderTimeoutInstant(WilsonState wilsonState) {
-    return wilsonState.getLastHeartbeatReceived().plus(configuration.getLeaderTimeout(), ChronoUnit.MILLIS);
+    // Leader has timed out, transition to candidate
+    return ImmutableWilsonState.builder()
+        .from(wilsonState)
+        .setCurrentTerm(wilsonState.getCurrentTerm() + 1L)
+        .setLeaderState(LeaderState.CANDIDATE)
+        .setLastElectionStarted(Instant.now())
+        .setLastVotedFor(localMember)
+        .addVotesReceivedFrom(localMember)
+        .build();
   }
 
   public synchronized void apply(ElectionTimeoutMessage electionTimeoutMessage) {
@@ -105,23 +107,20 @@ public class StateMachineMessageApplier {
       return wilsonState;
     }
 
-    Instant electionTimeoutInstant = getElectionTimeoutInstant(wilsonState.getLastElectionStarted().get(), configuration.getElectionTimeout());
+    Instant electionTimeoutInstant = wilsonState.getLastElectionStarted().get().plus(electionTimeoutMessage.getElectionTimeout(), ChronoUnit.MILLIS);
 
     // election has not timed out yet
     if (electionTimeoutInstant.isAfter(timeout)) {
       return wilsonState;
     }
 
+    LOG.debug("Election started {} but timeout occurred at {}. Transitioning back to follower.", electionTimeoutInstant, timeout);
+
     // transition back to follower
     return wilsonState
         .withLeaderState(LeaderState.FOLLOWER)
         .withLastVotedFor(Optional.empty())
         .withLastElectionStarted(Optional.empty());
-  }
-
-  private Instant getElectionTimeoutInstant(Instant lastElection,
-                                            long electionTimeout) {
-    return lastElection.plus(electionTimeout, ChronoUnit.MILLIS);
   }
 
   public synchronized VoteResponse apply(VoteRequest voteRequest,
@@ -138,6 +137,7 @@ public class StateMachineMessageApplier {
                                                 VoteRequest voteRequest,
                                                 ClusterMember clusterMember) {
     if (voteRequest.getTerm() < wilsonState.getCurrentTerm()) {
+      LOG.debug("Term on vote request ({}) is less than current term ({})", voteRequest.getTerm(), wilsonState.getCurrentTerm());
       return wilsonState;
     }
 
@@ -155,13 +155,16 @@ public class StateMachineMessageApplier {
     }
 
     if (voteRequest.getLastLogTerm() < wilsonState.getLastLogTerm()) {
+      LOG.debug("Last log term on vote request ({}) is less than current last log term ({})", voteRequest.getLastLogTerm(), wilsonState.getLastLogTerm());
       return wilsonState;
     }
 
     if (voteRequest.getLastLogIndex() < wilsonState.getLastLogIndex()) {
+      LOG.debug("Last log index on vote request ({}) is less than current last log index ({})", voteRequest.getLastLogIndex(), wilsonState.getLastLogIndex());
       return wilsonState;
     }
 
+    LOG.debug("Voting for {}", clusterMember);
     return wilsonState
         .withCurrentTerm(voteRequest.getTerm())
         .withLastVotedFor(clusterMember);
@@ -186,10 +189,15 @@ public class StateMachineMessageApplier {
         .build();
 
     if (hasQuorum(updatedWilsonState)) {
-      updatedWilsonState = updatedWilsonState.withLeaderState(LeaderState.LEADER)
-          .withLastVotedFor(Optional.empty())
-          .withVotesReceivedFrom()
-          .withLastElectionStarted(Optional.empty());
+      LOG.debug("Quorum achieved. Transitioning to leader,");
+      updatedWilsonState = ImmutableWilsonState.builder()
+          .from(updatedWilsonState)
+          .setLeaderState(LeaderState.LEADER)
+          .setCurrentLeader(localMember)
+          .setLastVotedFor(Optional.empty())
+          .setVotesReceivedFrom(Collections.emptyList())
+          .setLastElectionStarted(Optional.empty())
+          .build();
     }
 
     return updatedWilsonState;
@@ -198,6 +206,21 @@ public class StateMachineMessageApplier {
   private boolean hasQuorum(ImmutableWilsonState immutableWilsonState) {
     int requiredVotesForQuorum = (configuration.getClusterMembers().size() / 2) + 1;
     return immutableWilsonState.getVotesReceivedFrom().size() >= requiredVotesForQuorum;
+  }
+
+  public synchronized void apply(ImmutableHeartbeatTimeoutMessage heartbeatTimeoutMessage) {
+    WilsonState wilsonState = wilsonStateReference.get();
+
+    if (wilsonState.getLeaderState() != LeaderState.LEADER) {
+      return;
+    }
+
+    LOG.debug("Broadcasting heartbeat");
+    eventBus.post(ImmutableHeartbeatRequest.builder().build());
+  }
+
+  public synchronized void apply(ImmutableHeartbeatRequest heartbeatRequest) {
+    wilsonStateReference.getAndUpdate(wilsonState -> wilsonState.withLastHeartbeatReceived(Instant.now()));
   }
 
 }

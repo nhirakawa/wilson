@@ -8,6 +8,6 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @WilsonStyle
 @Immutable
 @JsonTypeName("Heartbeat")
-public interface HeartbeatMessage extends SerializedWilsonMessage {
+public interface HeartbeatRequest extends SerializedWilsonMessage {
 
 }

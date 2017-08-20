@@ -16,4 +16,6 @@ public interface LeaderTimeoutMessage extends LocalWilsonMessage {
     return Instant.now();
   }
 
+  long getLeaderTimeout();
+
 }

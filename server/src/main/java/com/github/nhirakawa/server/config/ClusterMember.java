@@ -1,13 +1,12 @@
 package com.github.nhirakawa.server.config;
 
-import java.nio.charset.StandardCharsets;
+import java.net.InetSocketAddress;
 
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.github.nhirakawa.wilson.models.style.WilsonStyle;
-import com.google.common.hash.Hashing;
 
 @Immutable
 @WilsonStyle
@@ -22,10 +21,6 @@ public abstract class ClusterMember {
 
   @Derived
   public String getServerId() {
-    return Hashing.murmur3_128().newHasher()
-        .putString(getHost(), StandardCharsets.UTF_8)
-        .putInt(getPort())
-        .hash()
-        .toString();
+    return InetSocketAddress.createUnresolved(getHost(), getPort()).toString();
   }
 }
