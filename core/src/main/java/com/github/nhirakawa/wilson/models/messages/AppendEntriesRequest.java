@@ -11,7 +11,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @WilsonStyle
 @Immutable
 @JsonTypeName("AppendEntriesRequest")
-interface AppendEntriesRequestIF extends Message {
+public interface AppendEntriesRequest extends SerializedWilsonMessage {
 
   long getTerm();
 
