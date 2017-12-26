@@ -518,6 +518,36 @@ public class StateMachineMessageApplierTest {
     assertThat(updatedWilsonState.getLastElectionStarted()).isNotPresent();
   }
 
+  @Test
+  public void itMovesToFollowerIfLaterTermSeen() {
+    Configuration configuration = ImmutableConfiguration.builder()
+        .setLocalMember(LOCAL_SERVER)
+        .addClusterMembers(LOCAL_SERVER, OTHER_SERVER)
+        .build();
+    ImmutableWilsonState wilsonState = ImmutableWilsonState.builder()
+        .setLeaderState(LeaderState.CANDIDATE)
+        .addVotesReceivedFrom(LOCAL_SERVER)
+        .setLastVotedFor(LOCAL_SERVER)
+        .setCurrentTerm(2L)
+        .build();
+
+    AtomicReference<ImmutableWilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
+    StateMachineMessageApplier applier = buildMessageApplier(configuration, wilsonStateReference);
+
+    VoteRequest voteRequest = ImmutableVoteRequest.builder()
+        .setTerm(3L)
+        .setLastLogTerm(3L)
+        .setLastLogIndex(100L)
+        .build();
+
+    applier.apply(voteRequest, OTHER_SERVER);
+
+    WilsonState updatedWilsonState = wilsonStateReference.get();
+    assertThat(updatedWilsonState.getLeaderState()).isEqualTo(LeaderState.FOLLOWER);
+    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(3L);
+    assertThat(updatedWilsonState.getLastVotedFor()).contains(OTHER_SERVER);
+  }
+
   private StateMachineMessageApplier buildMessageApplier(Configuration configuration,
                                                          AtomicReference<ImmutableWilsonState> wilsonStateReference) {
     return new StateMachineMessageApplier(wilsonStateReference, configuration, LOCAL_SERVER, eventBus);

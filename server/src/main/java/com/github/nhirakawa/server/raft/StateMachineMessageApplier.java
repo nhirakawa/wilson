@@ -141,7 +141,16 @@ public class StateMachineMessageApplier {
       return wilsonState;
     }
 
-    if (wilsonState.getLastVotedFor().isPresent()) {
+    if (voteRequest.getTerm() > wilsonState.getCurrentTerm()) {
+      LOG.debug("Term on vote request ({}) is later than current term ({}). Transitioning to follower.", voteRequest.getTerm(), wilsonState.getCurrentTerm());
+      return wilsonState
+          .withCurrentTerm(voteRequest.getTerm())
+          .withLeaderState(LeaderState.FOLLOWER)
+          .withLastVotedFor(clusterMember);
+    }
+
+    if (wilsonState.getLastVotedFor().isPresent() && voteRequest.getTerm() <= wilsonState.getCurrentTerm()) {
+      LOG.debug("Already voted for {}", wilsonState.getLastVotedFor().get());
       return wilsonState;
     }
 
