@@ -5,28 +5,29 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.nhirakawa.server.cli.CliArguments;
-import com.github.nhirakawa.server.config.ClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.config.ConfigPath;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 import io.grpc.inprocess.InProcessSocketAddress;
 
 public class SocketAddressProvider {
 
   private final boolean isLocalMode;
-  private final Map<ClusterMember, SocketAddress> socketAddressMap;
+  private final Map<ClusterMemberModel, SocketAddress> socketAddressMap;
 
   @Inject
-  SocketAddressProvider(CliArguments cliArguments) {
-    this.isLocalMode = cliArguments.isLocalMode();
+  SocketAddressProvider(Config config) {
+    this.isLocalMode = config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath());
     this.socketAddressMap = new ConcurrentHashMap<>();
   }
 
-  public SocketAddress getSocketAddressFor(ClusterMember clusterMember) {
+  public SocketAddress getSocketAddressFor(ClusterMemberModel clusterMember) {
     return socketAddressMap.computeIfAbsent(clusterMember, this::getSocketAddress);
   }
 
-  private SocketAddress getSocketAddress(ClusterMember clusterMember) {
+  private SocketAddress getSocketAddress(ClusterMemberModel clusterMember) {
     if (isLocalMode) {
       return new InProcessSocketAddress(clusterMember.getServerId());
     } else {

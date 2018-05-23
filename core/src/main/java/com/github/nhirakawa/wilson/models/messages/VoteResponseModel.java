@@ -7,12 +7,10 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-@JsonTypeName("VoteRequest")
-public interface VoteRequest extends SerializedWilsonMessage {
+@JsonTypeName("VoteResponseModel")
+public interface VoteResponseModel extends SerializedWilsonMessage {
 
   long getTerm();
 
-  long getLastLogIndex();
-
-  long getLastLogTerm();
+  boolean isVoteGranted();
 }

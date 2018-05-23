@@ -1,15 +1,10 @@
 package com.github.nhirakawa.server.transport.grpc;
 
-import org.slf4j.MDC;
-
 import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.ImmutableClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
-import com.github.nhirakawa.server.transport.grpc.WilsonProtos.HeartbeatRequest;
-import com.github.nhirakawa.server.transport.grpc.WilsonProtos.HeartbeatResponse;
-import com.github.nhirakawa.wilson.models.messages.ImmutableHeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.ImmutableVoteRequest;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
 import com.google.inject.Inject;
@@ -21,33 +16,31 @@ import io.grpc.stub.StreamObserver;
 public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
 
   private final StateMachineMessageApplier messageApplier;
-  private final ClusterMember localMember;
+  private final ClusterMemberModel localMember;
 
   @Inject
   WilsonGrpcService(StateMachineMessageApplier messageApplier,
-                    @LocalMember ClusterMember localMember) {
+                    @LocalMember ClusterMemberModel localMember) {
     this.messageApplier = messageApplier;
     this.localMember = localMember;
   }
 
   @Override
-  public void heartbeat(HeartbeatRequest request, StreamObserver<HeartbeatResponse> responseObserver) {
-    MDC.put("serverId", localMember.getServerId());
-    ImmutableHeartbeatRequest heartbeatRequest = ImmutableHeartbeatRequest.builder().build();
+  public void heartbeat(WilsonProtos.HeartbeatRequest request, StreamObserver<WilsonProtos.HeartbeatResponse> responseObserver) {
+    HeartbeatRequest heartbeatRequest = HeartbeatRequest.builder().build();
     messageApplier.apply(heartbeatRequest);
-    responseObserver.onNext(HeartbeatResponse.getDefaultInstance());
+    responseObserver.onNext(WilsonProtos.HeartbeatResponse.getDefaultInstance());
     responseObserver.onCompleted();
-    MDC.remove("serverId");
   }
 
   @Override
   public void requestVote(WilsonProtos.VoteRequest request, StreamObserver<WilsonProtos.VoteResponse> responseObserver) {
-    MDC.put("serverId", localMember.getServerId());
-    ClusterMember clusterMember = ImmutableClusterMember.builder()
+    ClusterMember clusterMember = ClusterMember.builder()
         .setHost(request.getClusterMember().getHost())
         .setPort(request.getClusterMember().getPort())
         .build();
-    VoteRequest voteRequest = ImmutableVoteRequest.builder()
+
+    VoteRequest voteRequest = VoteRequest.builder()
         .setTerm(request.getTerm())
         .setLastLogTerm(request.getLastLogTerm())
         .setLastLogIndex(request.getLastLogIndex())
@@ -66,6 +59,5 @@ public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
         .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
-    MDC.remove("serverId");
   }
 }

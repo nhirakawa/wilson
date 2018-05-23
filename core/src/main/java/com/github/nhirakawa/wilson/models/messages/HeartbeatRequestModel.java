@@ -7,10 +7,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-@JsonTypeName("AppendEntriesResponse")
-public interface AppendEntriesResponse extends SerializedWilsonMessage {
+@JsonTypeName("Heartbeat")
+public interface HeartbeatRequestModel extends SerializedWilsonMessage {
 
-  long getTerm();
-
-  boolean isSuccess();
 }

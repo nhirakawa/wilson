@@ -10,7 +10,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @Immutable
 @WilsonStyle
-public abstract class ClusterMember {
+public abstract class ClusterMemberModel {
 
   @Default
   public String getHost() {

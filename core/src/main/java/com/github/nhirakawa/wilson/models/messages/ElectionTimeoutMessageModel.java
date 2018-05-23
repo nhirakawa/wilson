@@ -1,20 +1,21 @@
 package com.github.nhirakawa.wilson.models.messages;
 
-import java.util.UUID;
+import java.time.Instant;
 
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @Immutable
 @WilsonStyle
-@JsonTypeName("UuidMessage")
-public interface UuidWilsonMessage extends SerializedWilsonMessage {
+public interface ElectionTimeoutMessageModel extends LocalWilsonMessage {
 
   @Value.Default
-  default String getUuid() {
-    return UUID.randomUUID().toString();
+  default Instant getTimestamp() {
+    return Instant.now();
   }
+
+  long getElectionTimeout();
+
 }

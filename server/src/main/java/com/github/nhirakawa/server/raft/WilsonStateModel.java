@@ -7,14 +7,14 @@ import java.util.Set;
 
 import org.immutables.value.Value;
 
-import com.github.nhirakawa.server.config.ClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 
 @Value.Immutable
 @WilsonStyle
-public interface WilsonState {
+public interface WilsonStateModel {
 
   @Value.Default
   default long getCurrentTerm() {
@@ -28,29 +28,29 @@ public interface WilsonState {
 
   Optional<Instant> getLastElectionStarted();
 
-  Optional<ClusterMember> getCurrentLeader();
+  Optional<ClusterMemberModel> getCurrentLeader();
 
   @Value.Default
   default LeaderState getLeaderState() {
     return LeaderState.FOLLOWER;
   }
 
-  List<LogItem> getLog();
+  List<LogItemModel> getLog();
 
-  Optional<ClusterMember> getLastVotedFor();
+  Optional<ClusterMemberModel> getLastVotedFor();
 
-  Set<ClusterMember> getVotesReceivedFrom();
+  Set<ClusterMemberModel> getVotesReceivedFrom();
 
   @Value.Lazy
   default long getLastLogTerm() {
-    Optional<LogItem> maybeLogItem = Optional.ofNullable(Iterables.getLast(getLog(), null));
-    return maybeLogItem.map(LogItem::getTerm).orElse(1L);
+    Optional<LogItemModel> maybeLogItem = Optional.ofNullable(Iterables.getLast(getLog(), null));
+    return maybeLogItem.map(LogItemModel::getTerm).orElse(1L);
   }
 
   @Value.Lazy
   default long getLastLogIndex() {
-    Optional<LogItem> maybeLogItem = Optional.ofNullable(Iterables.getLast(getLog(), null));
-    return maybeLogItem.map(LogItem::getIndex).orElse(1L);
+    Optional<LogItemModel> maybeLogItem = Optional.ofNullable(Iterables.getLast(getLog(), null));
+    return maybeLogItem.map(LogItemModel::getIndex).orElse(1L);
   }
 
   @Value.Check

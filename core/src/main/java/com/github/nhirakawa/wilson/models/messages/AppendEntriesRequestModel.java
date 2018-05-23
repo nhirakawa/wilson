@@ -10,8 +10,8 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-@JsonTypeName("AppendEntriesRequest")
-public interface AppendEntriesRequest extends SerializedWilsonMessage {
+@JsonTypeName("AppendEntriesRequestModel")
+public interface AppendEntriesRequestModel extends SerializedWilsonMessage {
 
   long getTerm();
 

@@ -2,20 +2,20 @@ package com.github.nhirakawa.wilson.models.messages;
 
 import java.time.Instant;
 
-import org.immutables.value.Value;
+import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Immutable;
 
 import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @Immutable
 @WilsonStyle
-public interface ElectionTimeoutMessage extends LocalWilsonMessage {
+public interface LeaderTimeoutMessageModel extends LocalWilsonMessage {
 
-  @Value.Default
+  @Default
   default Instant getTimestamp() {
     return Instant.now();
   }
 
-  long getElectionTimeout();
+  long getLeaderTimeout();
 
 }

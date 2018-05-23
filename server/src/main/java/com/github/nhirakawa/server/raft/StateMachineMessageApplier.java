@@ -4,19 +4,17 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.Configuration;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.ImmutableHeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.ImmutableHeartbeatTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.ImmutableVoteRequest;
-import com.github.nhirakawa.wilson.models.messages.ImmutableVoteResponse;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
@@ -27,18 +25,18 @@ public class StateMachineMessageApplier {
 
   private static final Logger LOG = LoggerFactory.getLogger(StateMachineMessageApplier.class);
 
-  private final AtomicReference<ImmutableWilsonState> wilsonStateReference;
-  private final Configuration configuration;
+  private final AtomicReference<WilsonState> wilsonStateReference;
+  private final Set<ClusterMember> clusterMembers;
   private final ClusterMember localMember;
   private final EventBus eventBus;
 
   @Inject
-  StateMachineMessageApplier(AtomicReference<ImmutableWilsonState> wilsonStateReference,
-                             Configuration configuration,
+  StateMachineMessageApplier(AtomicReference<WilsonState> wilsonStateReference,
+                             Set<ClusterMember> clusterMembers,
                              @LocalMember ClusterMember localMember,
                              EventBus eventBus) {
     this.wilsonStateReference = wilsonStateReference;
-    this.configuration = configuration;
+    this.clusterMembers = clusterMembers;
     this.localMember = localMember;
     this.eventBus = eventBus;
   }
@@ -51,7 +49,7 @@ public class StateMachineMessageApplier {
 
     WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(wilsonState -> applyLeaderTimeout(wilsonState, leaderTimeoutMessage));
     if (updatedWilsonState.getLeaderState() == LeaderState.CANDIDATE) {
-      VoteRequest voteRequest = ImmutableVoteRequest.builder()
+      VoteRequest voteRequest = VoteRequest.builder()
           .setTerm(updatedWilsonState.getCurrentTerm())
           .setLastLogTerm(updatedWilsonState.getLastLogTerm())
           .setLastLogIndex(updatedWilsonState.getLastLogIndex())
@@ -62,8 +60,8 @@ public class StateMachineMessageApplier {
     }
   }
 
-  private ImmutableWilsonState applyLeaderTimeout(ImmutableWilsonState wilsonState,
-                                                  LeaderTimeoutMessage leaderTimeoutMessage) {
+  private WilsonState applyLeaderTimeout(WilsonState wilsonState,
+                                         LeaderTimeoutMessage leaderTimeoutMessage) {
     // If we're not a follower, no-op
     if (wilsonState.getLeaderState() != LeaderState.FOLLOWER) {
       return wilsonState;
@@ -79,7 +77,7 @@ public class StateMachineMessageApplier {
     LOG.debug("Last heartbeat from leader received at {} but leader timeout at {}. Transitioning to candidate", leaderDeadline, messageTimestamp);
 
     // Leader has timed out, transition to candidate
-    return ImmutableWilsonState.builder()
+    return WilsonState.builder()
         .from(wilsonState)
         .setCurrentTerm(wilsonState.getCurrentTerm() + 1L)
         .setLeaderState(LeaderState.CANDIDATE)
@@ -98,8 +96,8 @@ public class StateMachineMessageApplier {
     wilsonStateReference.updateAndGet(wilsonState -> applyElectionTimeout(wilsonState, electionTimeoutMessage));
   }
 
-  private ImmutableWilsonState applyElectionTimeout(ImmutableWilsonState wilsonState,
-                                                    ElectionTimeoutMessage electionTimeoutMessage) {
+  private WilsonState applyElectionTimeout(WilsonState wilsonState,
+                                           ElectionTimeoutMessage electionTimeoutMessage) {
     Instant timeout = electionTimeoutMessage.getTimestamp();
 
     // we haven't seen an election
@@ -127,15 +125,15 @@ public class StateMachineMessageApplier {
                                          ClusterMember clusterMember) {
     WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(wilsonState -> applyVoteRequest(wilsonState, voteRequest, clusterMember));
     boolean voteGranted = updatedWilsonState.getLastVotedFor().isPresent() && updatedWilsonState.getLastVotedFor().get().equals(clusterMember);
-    return ImmutableVoteResponse.builder()
+    return VoteResponse.builder()
         .setTerm(updatedWilsonState.getCurrentTerm())
         .setVoteGranted(voteGranted)
         .build();
   }
 
-  private ImmutableWilsonState applyVoteRequest(ImmutableWilsonState wilsonState,
-                                                VoteRequest voteRequest,
-                                                ClusterMember clusterMember) {
+  private WilsonState applyVoteRequest(WilsonState wilsonState,
+                                       VoteRequest voteRequest,
+                                       ClusterMember clusterMember) {
     if (voteRequest.getTerm() < wilsonState.getCurrentTerm()) {
       LOG.debug("Term on vote request ({}) is less than current term ({})", voteRequest.getTerm(), wilsonState.getCurrentTerm());
       return wilsonState;
@@ -176,21 +174,21 @@ public class StateMachineMessageApplier {
     wilsonStateReference.updateAndGet(wilsonState -> applyVoteResponse(wilsonState, voteResponse, clusterMember));
   }
 
-  private ImmutableWilsonState applyVoteResponse(ImmutableWilsonState wilsonState,
-                                                 VoteResponse voteResponse,
-                                                 ClusterMember clusterMember) {
+  private WilsonState applyVoteResponse(WilsonState wilsonState,
+                                        VoteResponse voteResponse,
+                                        ClusterMember clusterMember) {
     if (!voteResponse.isVoteGranted()) {
       return wilsonState;
     }
 
-    ImmutableWilsonState updatedWilsonState = ImmutableWilsonState.builder()
+    WilsonState updatedWilsonState = WilsonState.builder()
         .from(wilsonState)
         .addVotesReceivedFrom(clusterMember)
         .build();
 
     if (hasQuorum(updatedWilsonState)) {
       LOG.debug("Quorum achieved. Transitioning to leader,");
-      updatedWilsonState = ImmutableWilsonState.builder()
+      updatedWilsonState = WilsonState.builder()
           .from(updatedWilsonState)
           .setLeaderState(LeaderState.LEADER)
           .setCurrentLeader(localMember)
@@ -203,12 +201,12 @@ public class StateMachineMessageApplier {
     return updatedWilsonState;
   }
 
-  private boolean hasQuorum(ImmutableWilsonState immutableWilsonState) {
-    int requiredVotesForQuorum = (configuration.getClusterMembers().size() / 2) + 1;
+  private boolean hasQuorum(WilsonState immutableWilsonState) {
+    int requiredVotesForQuorum = (clusterMembers.size() / 2) + 1;
     return immutableWilsonState.getVotesReceivedFrom().size() >= requiredVotesForQuorum;
   }
 
-  public synchronized void apply(ImmutableHeartbeatTimeoutMessage heartbeatTimeoutMessage) {
+  public synchronized void apply(HeartbeatTimeoutMessage heartbeatTimeoutMessage) {
     WilsonState wilsonState = wilsonStateReference.get();
 
     if (wilsonState.getLeaderState() != LeaderState.LEADER) {
@@ -216,10 +214,10 @@ public class StateMachineMessageApplier {
     }
 
     LOG.debug("Broadcasting heartbeat");
-    eventBus.post(ImmutableHeartbeatRequest.builder().build());
+    eventBus.post(HeartbeatRequest.builder().build());
   }
 
-  public synchronized void apply(ImmutableHeartbeatRequest heartbeatRequest) {
+  public synchronized void apply(HeartbeatRequest heartbeatRequest) {
     wilsonStateReference.getAndUpdate(wilsonState -> wilsonState.withLastHeartbeatReceived(Instant.now()));
   }
 
