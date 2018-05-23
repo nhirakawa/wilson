@@ -15,15 +15,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.github.nhirakawa.server.cli.CliArguments;
 import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.Configuration;
-import com.github.nhirakawa.server.config.ImmutableClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.transport.grpc.SocketAddressProvider;
 import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClient.WilsonGrpcClientFactory;
 import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClientAdapter;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.WaitStrategies;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
@@ -69,7 +67,7 @@ public class WilsonTransportModule extends AbstractModule {
     install(new FactoryModuleBuilder().build(WilsonGrpcClientFactory.class));
 
     bind(WilsonGrpcClientAdapter.class).asEagerSingleton();
-    bind(Key.get(ClusterMember.class, LocalMember.class)).toInstance(localMember);
+    bind(Key.get(ClusterMemberModel.class, LocalMember.class)).toInstance(localMember);
     bind(JsonFormat.Printer.class).toInstance(JsonFormat.printer().includingDefaultValueFields());
     bind(EventBus.class).toInstance(new EventBus());
   }
@@ -105,10 +103,9 @@ public class WilsonTransportModule extends AbstractModule {
   @Singleton
   Server provideServer(CliArguments cliArguments,
                        SocketAddressProvider socketAddressProvider,
-                       Configuration configuration,
                        Set<BindableService> services,
                        Set<ServerInterceptor> serverInterceptors,
-                       @LocalMember ClusterMember clusterMember) {
+                       @LocalMember ClusterMemberModel clusterMember) {
     if (cliArguments.isLocalMode()) {
       InProcessServerBuilder builder = InProcessServerBuilder.forName(clusterMember.getServerId());
       services.forEach(builder::addService);
@@ -121,15 +118,6 @@ public class WilsonTransportModule extends AbstractModule {
       serverInterceptors.forEach(builder::intercept);
       return builder.build();
     }
-  }
-
-  @Provides
-  @Singleton
-  Set<ImmutableClusterMember> providePeers(Configuration configuration,
-                                           @LocalMember ClusterMember clusterMember) {
-    return configuration.getClusterMembers().stream()
-        .filter(member -> !member.equals(clusterMember))
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   private boolean isConcreteClass(Class<?> clazz) {

@@ -8,12 +8,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY, property = "type")
 @JsonSubTypes({
-    @Type(value = ImmutableUuidWilsonMessage.class, name = "UuidMessage"),
-    @Type(value = ImmutableAppendEntriesRequest.class, name = "AppendEntriesRequest"),
-    @Type(value = ImmutableAppendEntriesResponse.class, name = "AppendEntriesResponse"),
-    @Type(value = ImmutableHeartbeatRequest.class, name = "Heartbeat"),
-    @Type(value = ImmutableVoteRequest.class, name = "VoteRequest"),
-    @Type(value = ImmutableVoteResponse.class, name = "VoteResponse")
+    @Type(value = UuidWilsonMessage.class, name = "UuidMessage"),
+    @Type(value = AppendEntriesRequest.class, name = "AppendEntriesRequestModel"),
+    @Type(value = AppendEntriesResponse.class, name = "AppendEntriesResponseModel"),
+    @Type(value = HeartbeatRequest.class, name = "Heartbeat"),
+    @Type(value = VoteRequest.class, name = "VoteRequestModel"),
+    @Type(value = VoteResponse.class, name = "VoteResponseModel")
 })
 public interface SerializedWilsonMessage extends WilsonMessage {
 

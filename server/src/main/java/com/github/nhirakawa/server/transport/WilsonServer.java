@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.nhirakawa.server.config.ClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.server.timeout.ElectionTimeout;
 import com.github.nhirakawa.server.timeout.HeartbeatTimeout;
@@ -22,14 +22,14 @@ public class WilsonServer {
   private final LeaderTimeout leaderTimeout;
   private final ElectionTimeout electionTimeout;
   private final HeartbeatTimeout heartbeatTimeout;
-  private final ClusterMember clusterMember;
+  private final ClusterMemberModel clusterMember;
 
   @Inject
   public WilsonServer(Server server,
                       LeaderTimeout leaderTimeout,
                       ElectionTimeout electionTimeout,
                       HeartbeatTimeout heartbeatTimeout,
-                      @LocalMember ClusterMember clusterMember) {
+                      @LocalMember ClusterMemberModel clusterMember) {
     this.server = server;
     this.leaderTimeout = leaderTimeout;
     this.electionTimeout = electionTimeout;

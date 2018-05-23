@@ -5,12 +5,15 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
 import com.github.nhirakawa.server.cli.CliArguments;
-import com.github.nhirakawa.server.config.ClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.transport.grpc.intercept.ClientHeaderInterceptor;
 import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatRequestModel;
 import com.github.nhirakawa.wilson.models.messages.HeartbeatResponse;
-import com.github.nhirakawa.wilson.models.messages.VoteRequest;
+import com.github.nhirakawa.wilson.models.messages.HeartbeatResponseModel;
+import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
+import com.github.nhirakawa.wilson.models.messages.VoteResponseModel;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -29,7 +32,7 @@ public class WilsonGrpcClient {
   private final WilsonGrpc.WilsonFutureStub futureStub;
 
   @AssistedInject
-  WilsonGrpcClient(@Assisted ClusterMember clusterMember,
+  WilsonGrpcClient(@Assisted ClusterMemberModel clusterMember,
                    ClientHeaderInterceptor clientHeaderInterceptor,
                    CliArguments cliArguments,
                    SocketAddressProvider socketAddressProvider) {
@@ -47,14 +50,14 @@ public class WilsonGrpcClient {
     this.futureStub = WilsonGrpc.newFutureStub(channel);
   }
 
-  public VoteResponse requestVoteSync(VoteRequest voteRequest) {
+  public VoteResponse requestVoteSync(VoteRequestModel voteRequest) {
     WilsonProtos.VoteRequest protoVoteRequest = ProtobufTranslator.toProto(voteRequest);
     WilsonProtos.VoteResponse protoVoteResponse = stub.requestVote(protoVoteRequest);
     return ProtobufTranslator.fromProto(protoVoteResponse);
   }
 
-  public HeartbeatResponse sendHeartbeatSync(HeartbeatRequest heartbeatRequest) {
-    WilsonProtos.HeartbeatRequest protoHeartbeatRequest = ProtobufTranslator.toProto(heartbeatRequest);
+  public HeartbeatResponse sendHeartbeatSync(HeartbeatRequest heartbeatRequestModel) {
+    WilsonProtos.HeartbeatRequest protoHeartbeatRequest = ProtobufTranslator.toProto(heartbeatRequestModel);
     WilsonProtos.HeartbeatResponse protoHeartbeatResponse = stub.heartbeat(protoHeartbeatRequest);
     return ProtobufTranslator.fromProto(protoHeartbeatResponse);
   }
@@ -76,6 +79,6 @@ public class WilsonGrpcClient {
   }
 
   public interface WilsonGrpcClientFactory {
-    WilsonGrpcClient create(ClusterMember clusterMember);
+    WilsonGrpcClient create(ClusterMemberModel clusterMember);
   }
 }

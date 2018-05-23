@@ -8,7 +8,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @Immutable
 @WilsonStyle
-public interface LogItem {
+public interface LogItemModel {
 
   long getTerm();
 

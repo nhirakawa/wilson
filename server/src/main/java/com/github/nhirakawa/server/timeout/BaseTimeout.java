@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.github.nhirakawa.server.config.ClusterMember;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.google.common.base.Preconditions;
 
@@ -27,7 +27,7 @@ abstract class BaseTimeout {
 
   protected BaseTimeout(ScheduledExecutorService scheduledExecutorService,
                         long period,
-                        @LocalMember ClusterMember clusterMember) {
+                        @LocalMember ClusterMemberModel clusterMember) {
     this.scheduledExecutorService = scheduledExecutorService;
     this.period = period;
     this.serverId = clusterMember.getServerId();

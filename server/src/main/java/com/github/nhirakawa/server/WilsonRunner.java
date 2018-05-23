@@ -1,94 +1,79 @@
 package com.github.nhirakawa.server;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-import com.github.nhirakawa.server.cli.CliArguments;
 import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.Configuration;
-import com.github.nhirakawa.server.guice.WilsonConfigModule;
+import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.guice.WilsonRaftModule;
 import com.github.nhirakawa.server.guice.WilsonTransportModule;
+import com.github.nhirakawa.server.jackson.ObjectMapperWrapper;
 import com.github.nhirakawa.server.transport.WilsonServer;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Stage;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 public class WilsonRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(WilsonRunner.class);
 
   public static void main(String... args) throws IOException {
-    CliArguments cliArguments = new CliArguments(args);
-    loadProperties(cliArguments);
-
     printBanner();
 
-    Injector parentInjector = Guice.createInjector(Stage.PRODUCTION, new WilsonConfigModule(cliArguments));
-    Configuration configuration = parentInjector.getInstance(Configuration.class);
+    Config config = ConfigFactory.load();
+    boolean isLocalCluster = config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath());
 
-    if (cliArguments.isLocalMode()) {
-      run(configuration.getClusterMembers(), parentInjector);
+    if (isLocalCluster) {
+      runLocalCluster(config);
     } else {
-      Preconditions.checkState(configuration.getLocalMember().isPresent(), "Not running in local mode, but no local member specified");
-      run(Collections.singleton(configuration.getLocalMember().get()), parentInjector);
+      runLocalMember(config);
     }
   }
 
-  private static void loadProperties(CliArguments cliArguments) throws IOException {
-    Optional<String> maybeConfigurationFilePath = cliArguments.getConfigurationFilePath();
-    if (!maybeConfigurationFilePath.isPresent()) {
-      return;
-    }
+  private static void runLocalCluster(Config config) throws IOException {
+    Set<ClusterMember> clusterMembers = ObjectMapperWrapper.readValueFromConfig(config, ConfigPath.WILSON_CLUSTER_ADDRESSES);
 
-    String configurationFilePath = maybeConfigurationFilePath.get();
-    Properties properties = new Properties();
-    properties.load(new FileInputStream(configurationFilePath));
-    Properties systemProperties = System.getProperties();
-
-    for (Entry<Object, Object> entry : properties.entrySet()) {
-      systemProperties.putIfAbsent(entry.getKey(), entry.getValue());
-    }
-  }
-
-  private static void run(Collection<? extends ClusterMember> members,
-                          Injector parentInjector) {
     ExecutorService executorService = getExecutorService();
-    for (ClusterMember member : members) {
-      executorService.submit(() -> runMember(member, parentInjector));
+
+    for (ClusterMember clusterMember : clusterMembers) {
+      executorService.submit(() -> runMember(clusterMember, config));
     }
   }
 
-  private static void runMember(ClusterMember clusterMember,
-                                Injector parentInjector) {
-    MDC.put("serverId", clusterMember.getServerId());
-    WilsonRaftModule wilsonRaftModule = new WilsonRaftModule(clusterMember.getServerId());
-    Injector injector = parentInjector.createChildInjector(wilsonRaftModule, new WilsonTransportModule(clusterMember));
+  private static void runLocalMember(Config config) throws IOException {
+    ClusterMember localClusterMember = ObjectMapperWrapper.readValueFromConfig(config, ConfigPath.WILSON_LOCAL_ADDRESS);
+    runMember(localClusterMember, config);
+  }
+
+  private static void runMember(ClusterMember clusterMember, Config config) {
+    Config configWithLocalMember = ConfigFactory.parseMap(
+        ImmutableMap.of(
+            "wilson.local.host", clusterMember.getHost(),
+            "wilson.local.port", clusterMember.getPort()
+        )
+    )
+        .withFallback(config);
+
+    Injector injector = Guice.createInjector(new WilsonRaftModule(configWithLocalMember), new WilsonTransportModule(clusterMember));
 
     try {
       injector.getInstance(WilsonServer.class).start();
     } catch (InterruptedException | IOException e) {
       LOG.error("Could not bootstrap {}", clusterMember, e);
       throw new RuntimeException(e);
-    } finally {
-      MDC.remove("serverId");
     }
   }
 

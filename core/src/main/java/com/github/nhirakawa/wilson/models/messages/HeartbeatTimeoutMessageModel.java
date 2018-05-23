@@ -8,7 +8,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @Value.Immutable
 @WilsonStyle
-public interface HeartbeatTimeoutMessage {
+public interface HeartbeatTimeoutMessageModel {
 
   @Value.Default
   default Instant getTimestamp() {
