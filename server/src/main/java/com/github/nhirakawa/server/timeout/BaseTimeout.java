@@ -3,6 +3,7 @@ package com.github.nhirakawa.server.timeout;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -29,7 +30,7 @@ abstract class BaseTimeout {
                         long period,
                         @LocalMember ClusterMemberModel clusterMember) {
     this.scheduledExecutorService = scheduledExecutorService;
-    this.period = period;
+    this.period = period + ThreadLocalRandom.current().nextInt(50, 150);
     this.serverId = clusterMember.getServerId();
 
     this.scheduledFuture = Optional.empty();

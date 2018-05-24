@@ -20,7 +20,7 @@ public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
 
   @Inject
   WilsonGrpcService(StateMachineMessageApplier messageApplier,
-                    @LocalMember ClusterMemberModel localMember) {
+                    @LocalMember ClusterMember localMember) {
     this.messageApplier = messageApplier;
     this.localMember = localMember;
   }

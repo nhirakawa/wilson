@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.nhirakawa.server.config.ClusterMember;
 import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.server.timeout.ElectionTimeout;
@@ -29,7 +30,7 @@ public class WilsonServer {
                       LeaderTimeout leaderTimeout,
                       ElectionTimeout electionTimeout,
                       HeartbeatTimeout heartbeatTimeout,
-                      @LocalMember ClusterMemberModel clusterMember) {
+                      @LocalMember ClusterMember clusterMember) {
     this.server = server;
     this.leaderTimeout = leaderTimeout;
     this.electionTimeout = electionTimeout;

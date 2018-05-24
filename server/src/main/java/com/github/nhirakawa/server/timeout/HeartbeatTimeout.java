@@ -2,6 +2,7 @@ package com.github.nhirakawa.server.timeout;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import com.github.nhirakawa.server.config.ClusterMember;
 import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.guice.LocalMember;
@@ -20,7 +21,7 @@ public class HeartbeatTimeout extends BaseTimeout {
   HeartbeatTimeout(ScheduledExecutorService scheduledExecutorService,
                    Config config,
                    StateMachineMessageApplier applier,
-                   @LocalMember ClusterMemberModel clusterMember) {
+                   @LocalMember ClusterMember clusterMember) {
     super(
         scheduledExecutorService,
         config.getLong(ConfigPath.WILSON_HEARTBEAT_TIMEOUT.getPath()),

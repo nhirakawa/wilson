@@ -2,6 +2,7 @@ package com.github.nhirakawa.server.guice;
 
 import java.lang.reflect.Modifier;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -13,9 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.github.nhirakawa.server.cli.CliArguments;
 import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.transport.grpc.SocketAddressProvider;
 import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClient.WilsonGrpcClientFactory;
 import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClientAdapter;
@@ -25,12 +25,12 @@ import com.github.rholder.retry.WaitStrategies;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
-import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.protobuf.util.JsonFormat;
+import com.typesafe.config.Config;
 
 import io.grpc.BindableService;
 import io.grpc.Server;
@@ -44,9 +44,12 @@ public class WilsonTransportModule extends AbstractModule {
   private static final Logger LOG = LoggerFactory.getLogger(WilsonTransportModule.class);
 
   private final ClusterMember localMember;
+  private final Set<ClusterMember> clusterMembers;
 
-  public WilsonTransportModule(ClusterMember localMember) {
+  public WilsonTransportModule(ClusterMember localMember,
+                               Set<ClusterMember> clusterMembers) {
     this.localMember = localMember;
+    this.clusterMembers = clusterMembers;
   }
 
   @Override
@@ -67,7 +70,6 @@ public class WilsonTransportModule extends AbstractModule {
     install(new FactoryModuleBuilder().build(WilsonGrpcClientFactory.class));
 
     bind(WilsonGrpcClientAdapter.class).asEagerSingleton();
-    bind(Key.get(ClusterMemberModel.class, LocalMember.class)).toInstance(localMember);
     bind(JsonFormat.Printer.class).toInstance(JsonFormat.printer().includingDefaultValueFields());
     bind(EventBus.class).toInstance(new EventBus());
   }
@@ -82,10 +84,10 @@ public class WilsonTransportModule extends AbstractModule {
 
   @Provides
   @Singleton
-  ScheduledExecutorService provideScheduledExecutorService() {
+  ScheduledExecutorService provideScheduledExecutorService(@LocalMember ClusterMember clusterMember) {
     ScheduledExecutorService executor = Executors.newScheduledThreadPool(
         4,
-        getNamedThreadFactory("wilson-scheduled")
+        getNamedThreadFactory("wilson-scheduled", clusterMember)
     );
     return executor;
   }
@@ -101,23 +103,42 @@ public class WilsonTransportModule extends AbstractModule {
 
   @Provides
   @Singleton
-  Server provideServer(CliArguments cliArguments,
+  Server provideServer(Config config,
                        SocketAddressProvider socketAddressProvider,
                        Set<BindableService> services,
                        Set<ServerInterceptor> serverInterceptors,
-                       @LocalMember ClusterMemberModel clusterMember) {
-    if (cliArguments.isLocalMode()) {
+                       @LocalMember ClusterMember clusterMember) {
+    ExecutorService executorService = Executors.newCachedThreadPool(
+        getNamedThreadFactory("grpc-server", clusterMember)
+    );
+
+    if (config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath())) {
       InProcessServerBuilder builder = InProcessServerBuilder.forName(clusterMember.getServerId());
       services.forEach(builder::addService);
       serverInterceptors.forEach(builder::intercept);
+      builder.executor(executorService);
       return builder.build();
     } else {
       NettyServerBuilder builder = NettyServerBuilder.forAddress(socketAddressProvider.getSocketAddressFor(clusterMember));
       builder.channelType(NioServerSocketChannel.class);
       services.forEach(builder::addService);
       serverInterceptors.forEach(builder::intercept);
+      builder.executor(executorService);
       return builder.build();
     }
+  }
+
+  @Provides
+  @Singleton
+  @LocalMember
+  ClusterMember provideLocalMember() {
+    return localMember;
+  }
+
+  @Provides
+  @Singleton
+  Set<ClusterMember> provideClusterMembers() {
+    return clusterMembers;
   }
 
   private boolean isConcreteClass(Class<?> clazz) {
@@ -132,9 +153,11 @@ public class WilsonTransportModule extends AbstractModule {
     LOG.debug("Found ServerInterceptor {}", clazz.getCanonicalName());
   }
 
-  private static ThreadFactory getNamedThreadFactory(String namespace) {
+  private static ThreadFactory getNamedThreadFactory(String namespace,
+                                                     ClusterMember clusterMember) {
+    String format = String.format("%s-%s-%s", namespace, clusterMember.getHost(), clusterMember.getPort());
     return new ThreadFactoryBuilder()
-        .setNameFormat(namespace + "-%s")
+        .setNameFormat(format + "-%s")
         .build();
   }
 }

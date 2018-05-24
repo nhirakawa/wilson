@@ -1,6 +1,6 @@
 package com.github.nhirakawa.server.transport.grpc.intercept;
 
-import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.config.ClusterMember;
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.google.inject.Inject;
@@ -21,7 +21,7 @@ public class ClientHeaderInterceptor implements ClientInterceptor {
 
   @Inject
   ClientHeaderInterceptor(Config config,
-                          @LocalMember ClusterMemberModel clusterMember) {
+                          @LocalMember ClusterMember clusterMember) {
     this.clusterId = config.getString(ConfigPath.WILSON_CLUSTER_ID.getPath());
     this.serverId = clusterMember.getServerId();
   }

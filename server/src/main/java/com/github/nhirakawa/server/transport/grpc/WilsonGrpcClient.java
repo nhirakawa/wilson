@@ -4,22 +4,20 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
-import com.github.nhirakawa.server.cli.CliArguments;
 import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.transport.grpc.intercept.ClientHeaderInterceptor;
 import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequestModel;
 import com.github.nhirakawa.wilson.models.messages.HeartbeatResponse;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatResponseModel;
 import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
-import com.github.nhirakawa.wilson.models.messages.VoteResponseModel;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.protobuf.GeneratedMessageV3;
+import com.typesafe.config.Config;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -34,9 +32,9 @@ public class WilsonGrpcClient {
   @AssistedInject
   WilsonGrpcClient(@Assisted ClusterMemberModel clusterMember,
                    ClientHeaderInterceptor clientHeaderInterceptor,
-                   CliArguments cliArguments,
+                   Config config,
                    SocketAddressProvider socketAddressProvider) {
-    ManagedChannelBuilder<?> channelBuilder = cliArguments.isLocalMode()
+    ManagedChannelBuilder<?> channelBuilder = config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath())
         ? InProcessChannelBuilder.forName(clusterMember.getServerId())
         : NettyChannelBuilder.forAddress(socketAddressProvider.getSocketAddressFor(clusterMember));
 
