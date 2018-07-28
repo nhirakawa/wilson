@@ -4,12 +4,8 @@ option java_package = "com.github.nhirakawa.server.transport.grpc";
 option java_outer_classname = "WilsonProtos";
 
 service Wilson {
-
-    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse) {
-    }
-
-    rpc RequestVote (VoteRequest) returns (VoteResponse) {
-    }
+    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse) {}
+    rpc RequestVote (VoteRequest) returns (VoteResponse) {}
 }
 
 message HeartbeatRequest {
