@@ -13,12 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.nhirakawa.server.config.ClusterMember;
+
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.config.ConfigValidator;
 import com.github.nhirakawa.server.guice.WilsonRaftModule;
 import com.github.nhirakawa.server.guice.WilsonTransportModule;
 import com.github.nhirakawa.server.jackson.ObjectMapperWrapper;
+import com.github.nhirakawa.server.models.ClusterMember;
 import com.github.nhirakawa.server.transport.WilsonServer;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;

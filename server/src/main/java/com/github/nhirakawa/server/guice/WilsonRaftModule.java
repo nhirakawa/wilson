@@ -2,7 +2,7 @@ package com.github.nhirakawa.server.guice;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.github.nhirakawa.server.raft.WilsonState;
+import com.github.nhirakawa.server.models.WilsonState;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;

@@ -5,7 +5,7 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;

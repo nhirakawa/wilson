@@ -3,12 +3,12 @@ package com.github.nhirakawa.server.transport.grpc;
 import java.time.Instant;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequestModel;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatResponse;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatResponseModel;
-import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
-import com.github.nhirakawa.wilson.models.messages.VoteResponse;
+import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
+import com.github.nhirakawa.server.models.messages.HeartbeatRequestModel;
+import com.github.nhirakawa.server.models.messages.HeartbeatResponse;
+import com.github.nhirakawa.server.models.messages.HeartbeatResponseModel;
+import com.github.nhirakawa.server.models.messages.VoteRequestModel;
+import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.google.inject.Inject;
 
 final class ProtobufTranslator {

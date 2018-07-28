@@ -1,4 +1,4 @@
-package com.github.nhirakawa.server.raft;
+package com.github.nhirakawa.server.models;
 
 import java.time.Instant;
 import java.util.List;
@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.immutables.value.Value;
 
-import com.github.nhirakawa.server.config.ClusterMemberModel;
-import com.github.nhirakawa.wilson.models.style.WilsonStyle;
+import com.github.nhirakawa.server.models.style.WilsonStyle;
+import com.github.nhirakawa.server.raft.LeaderState;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 

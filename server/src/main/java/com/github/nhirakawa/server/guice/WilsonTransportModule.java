@@ -14,8 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.github.nhirakawa.server.config.ClusterMember;
+
 import com.github.nhirakawa.server.config.ConfigPath;
+import com.github.nhirakawa.server.models.ClusterMember;
 import com.github.nhirakawa.server.transport.grpc.SocketAddressProvider;
 import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClient.WilsonGrpcClientFactory;
 import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClientAdapter;

@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.models.messages;
+package com.github.nhirakawa.server.models.messages;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;

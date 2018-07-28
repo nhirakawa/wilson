@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.models.messages;
+package com.github.nhirakawa.server.models.messages;
 
 import java.util.List;
 import java.util.UUID;
@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.github.nhirakawa.wilson.models.style.WilsonStyle;
+import com.github.nhirakawa.server.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
@@ -14,14 +14,10 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 public interface AppendEntriesRequestModel extends SerializedWilsonMessage {
 
   long getTerm();
-
   UUID getLeaderId();
-
   long getPreviousLogIndex();
-
   long getPreviousLogTerm();
-
   List<String> getEntries();
-
   long getLeaderCommitIndex();
+
 }

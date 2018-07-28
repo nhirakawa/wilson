@@ -16,15 +16,18 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequestModel;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.VoteRequest;
-import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
-import com.github.nhirakawa.wilson.models.messages.VoteResponse;
-import com.github.nhirakawa.wilson.models.messages.VoteResponseModel;
+import com.github.nhirakawa.server.models.ClusterMember;
+import com.github.nhirakawa.server.models.LogItem;
+import com.github.nhirakawa.server.models.WilsonState;
+import com.github.nhirakawa.server.models.WilsonStateModel;
+import com.github.nhirakawa.server.models.messages.ElectionTimeoutMessage;
+import com.github.nhirakawa.server.models.messages.HeartbeatRequestModel;
+import com.github.nhirakawa.server.models.messages.HeartbeatTimeoutMessage;
+import com.github.nhirakawa.server.models.messages.LeaderTimeoutMessage;
+import com.github.nhirakawa.server.models.messages.VoteRequest;
+import com.github.nhirakawa.server.models.messages.VoteRequestModel;
+import com.github.nhirakawa.server.models.messages.VoteResponse;
+import com.github.nhirakawa.server.models.messages.VoteResponseModel;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
 

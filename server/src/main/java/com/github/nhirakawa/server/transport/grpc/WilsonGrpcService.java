@@ -1,12 +1,12 @@
 package com.github.nhirakawa.server.transport.grpc;
 
-import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.models.ClusterMember;
+import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.VoteRequest;
-import com.github.nhirakawa.wilson.models.messages.VoteResponse;
+import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
+import com.github.nhirakawa.server.models.messages.VoteRequest;
+import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

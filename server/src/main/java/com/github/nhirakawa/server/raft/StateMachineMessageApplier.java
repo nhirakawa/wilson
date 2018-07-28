@@ -10,14 +10,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.nhirakawa.server.config.ClusterMember;
 import com.github.nhirakawa.server.guice.LocalMember;
-import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
-import com.github.nhirakawa.wilson.models.messages.VoteRequest;
-import com.github.nhirakawa.wilson.models.messages.VoteResponse;
+import com.github.nhirakawa.server.models.ClusterMember;
+import com.github.nhirakawa.server.models.WilsonState;
+import com.github.nhirakawa.server.models.messages.ElectionTimeoutMessage;
+import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
+import com.github.nhirakawa.server.models.messages.HeartbeatTimeoutMessage;
+import com.github.nhirakawa.server.models.messages.LeaderTimeoutMessage;
+import com.github.nhirakawa.server.models.messages.VoteRequest;
+import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 

@@ -1,8 +1,8 @@
 package com.github.nhirakawa.server.transport.grpc.intercept;
 
-import com.github.nhirakawa.server.config.ClusterMember;
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.models.ClusterMember;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 

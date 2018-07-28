@@ -1,0 +1,4 @@
+package com.github.nhirakawa.server.models.messages;
+
+public interface WilsonMessage {
+}

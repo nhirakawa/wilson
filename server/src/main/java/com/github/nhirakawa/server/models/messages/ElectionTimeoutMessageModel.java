@@ -1,11 +1,11 @@
-package com.github.nhirakawa.wilson.models.messages;
+package com.github.nhirakawa.server.models.messages;
 
 import java.time.Instant;
 
 import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 
-import com.github.nhirakawa.wilson.models.style.WilsonStyle;
+import com.github.nhirakawa.server.models.style.WilsonStyle;
 
 @Immutable
 @WilsonStyle

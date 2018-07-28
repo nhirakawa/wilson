@@ -4,13 +4,13 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
-import com.github.nhirakawa.server.config.ClusterMemberModel;
+import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.transport.grpc.intercept.ClientHeaderInterceptor;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatRequest;
-import com.github.nhirakawa.wilson.models.messages.HeartbeatResponse;
-import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
-import com.github.nhirakawa.wilson.models.messages.VoteResponse;
+import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
+import com.github.nhirakawa.server.models.messages.HeartbeatResponse;
+import com.github.nhirakawa.server.models.messages.VoteRequestModel;
+import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;

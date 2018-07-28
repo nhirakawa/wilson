@@ -8,7 +8,6 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>core</module>
     <module>server</module>
     <module>client</module>
   </modules>

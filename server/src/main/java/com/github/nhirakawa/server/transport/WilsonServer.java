@@ -5,9 +5,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.nhirakawa.server.config.ClusterMember;
-import com.github.nhirakawa.server.config.ClusterMemberModel;
 import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.models.ClusterMember;
+import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.timeout.ElectionTimeout;
 import com.github.nhirakawa.server.timeout.HeartbeatTimeout;
 import com.github.nhirakawa.server.timeout.LeaderTimeout;
