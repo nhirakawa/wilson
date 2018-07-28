@@ -7,6 +7,7 @@ import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.server.models.messages.HeartbeatRequestModel;
 import com.github.nhirakawa.server.models.messages.HeartbeatResponse;
 import com.github.nhirakawa.server.models.messages.HeartbeatResponseModel;
+import com.github.nhirakawa.server.models.messages.VoteRequest;
 import com.github.nhirakawa.server.models.messages.VoteRequestModel;
 import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.google.inject.Inject;
@@ -20,29 +21,31 @@ final class ProtobufTranslator {
     this.objectMapper = objectMapper;
   }
 
-  public static VoteRequestProto toProto(VoteRequestModel request) {
-    return VoteRequestProto.newBuilder()
-        .setTerm(request.getTerm())
-        .setLastLogTerm(request.getLastLogTerm())
-        .setLastLogIndex(request.getLastLogIndex())
-        .setTimestamp(Instant.now().toEpochMilli())
-        .build();
+  public VoteRequestProto toProto(VoteRequestModel request) {
+    return objectMapper.convertValue(request, VoteRequestProto.class);
   }
 
-  public static VoteResponse fromProto(VoteResponseProto voteResponse) {
-    return VoteResponse.builder()
-        .setTerm(voteResponse.getCurrentTerm())
-        .setVoteGranted(voteResponse.getVoteGranted())
-        .build();
+  public VoteRequest fromProto(VoteRequestProto voteRequestProto) {
+    return objectMapper.convertValue(voteRequestProto, VoteRequest.class);
   }
 
-  public static HeartbeatRequestProto toProto(HeartbeatRequest heartbeatRequestModel) {
-    return HeartbeatRequestProto.newBuilder()
-        .setTimestamp(Instant.now().toEpochMilli())
-        .build();
+  public VoteResponse fromProto(VoteResponseProto voteResponse) {
+    return objectMapper.convertValue(voteResponse, VoteResponse.class);
   }
 
-  public static HeartbeatResponse fromProto(HeartbeatResponseProto heartbeatResponse) {
-    return HeartbeatResponse.builder().build();
+  public VoteResponseProto toProto(VoteResponse voteResponse) {
+    return objectMapper.convertValue(voteResponse, VoteResponseProto.class);
+  }
+
+  public HeartbeatRequestProto toProto(HeartbeatRequest heartbeatRequestModel) {
+    return objectMapper.convertValue(heartbeatRequestModel, HeartbeatRequestProto.class);
+  }
+
+  public HeartbeatResponse fromProto(HeartbeatResponseProto heartbeatResponse) {
+    return objectMapper.convertValue(heartbeatResponse, HeartbeatResponse.class);
+  }
+
+  public ObjectMapper instance() {
+    return objectMapper;
   }
 }

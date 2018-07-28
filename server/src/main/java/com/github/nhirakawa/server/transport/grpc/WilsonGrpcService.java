@@ -1,12 +1,16 @@
 package com.github.nhirakawa.server.transport.grpc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.nhirakawa.server.guice.LocalMember;
 import com.github.nhirakawa.server.models.ClusterMember;
 import com.github.nhirakawa.server.models.ClusterMemberModel;
-import com.github.nhirakawa.server.guice.LocalMember;
-import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
 import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.server.models.messages.VoteRequest;
 import com.github.nhirakawa.server.models.messages.VoteResponse;
+import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -15,14 +19,19 @@ import io.grpc.stub.StreamObserver;
 @Singleton
 public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
 
+  private static final Logger LOG = LoggerFactory.getLogger(WilsonGrpcService.class);
+
   private final StateMachineMessageApplier messageApplier;
   private final ClusterMemberModel localMember;
+  private final ProtobufTranslator protobufTranslator;
 
   @Inject
   WilsonGrpcService(StateMachineMessageApplier messageApplier,
-                    @LocalMember ClusterMember localMember) {
+                    @LocalMember ClusterMember localMember,
+                    ProtobufTranslator protobufTranslator) {
     this.messageApplier = messageApplier;
     this.localMember = localMember;
+    this.protobufTranslator = protobufTranslator;
   }
 
   @Override
@@ -35,29 +44,19 @@ public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
 
   @Override
   public void requestVote(VoteRequestProto request, StreamObserver<VoteResponseProto> responseObserver) {
-    ClusterMember clusterMember = ClusterMember.builder()
-        .setHost(request.getClusterMember().getHost())
-        .setPort(request.getClusterMember().getPort())
-        .build();
+    try {
+      LOG.debug("vote request {}", protobufTranslator.instance().writeValueAsString(request));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
 
-    VoteRequest voteRequest = VoteRequest.builder()
-        .setTerm(request.getTerm())
-        .setLastLogTerm(request.getLastLogTerm())
-        .setLastLogIndex(request.getLastLogIndex())
-        .build();
+    VoteRequest voteRequest = protobufTranslator.fromProto(request);
 
-    VoteResponse voteResponse = messageApplier.apply(voteRequest, clusterMember);
+    VoteResponse voteResponse = messageApplier.apply(voteRequest);
 
-    VoteResponseProto response = VoteResponseProto.newBuilder()
-        .setClusterMember(
-            ClusterMemberProto.newBuilder()
-                .setHost(localMember.getHost())
-                .setPort(localMember.getPort())
-        )
-        .setVoteGranted(voteResponse.isVoteGranted())
-        .setCurrentTerm(voteResponse.getTerm())
-        .build();
-    responseObserver.onNext(response);
+    VoteResponseProto voteResponseProto = protobufTranslator.toProto(voteResponse);
+
+    responseObserver.onNext(voteResponseProto);
     responseObserver.onCompleted();
   }
 }

@@ -5,13 +5,11 @@ import java.util.UUID;
 
 import org.immutables.value.Value.Immutable;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.github.nhirakawa.server.models.style.WilsonStyle;
 
 @WilsonStyle
 @Immutable
-@JsonTypeName("AppendEntriesRequestModel")
-public interface AppendEntriesRequestModel extends SerializedWilsonMessage {
+public interface AppendEntriesRequestModel {
 
   long getTerm();
   UUID getLeaderId();

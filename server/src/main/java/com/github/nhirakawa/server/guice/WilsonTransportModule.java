@@ -12,6 +12,7 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
@@ -31,6 +32,7 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.Multibinder;
 import com.google.protobuf.util.JsonFormat;
+import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
 import com.typesafe.config.Config;
 
 import io.grpc.BindableService;
@@ -79,7 +81,12 @@ public class WilsonTransportModule extends AbstractModule {
   @Singleton
   ObjectMapper provideObjectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
+
     objectMapper.registerModule(new GuavaModule());
+    objectMapper.registerModule(new ProtobufModule());
+
+    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
     return objectMapper;
   }
 

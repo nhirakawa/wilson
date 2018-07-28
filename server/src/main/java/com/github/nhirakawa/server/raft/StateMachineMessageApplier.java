@@ -51,6 +51,7 @@ public class StateMachineMessageApplier {
     WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(wilsonState -> applyLeaderTimeout(wilsonState, leaderTimeoutMessage));
     if (updatedWilsonState.getLeaderState() == LeaderState.CANDIDATE) {
       VoteRequest voteRequest = VoteRequest.builder()
+          .setClusterMember(localMember)
           .setTerm(updatedWilsonState.getCurrentTerm())
           .setLastLogTerm(updatedWilsonState.getLastLogTerm())
           .setLastLogIndex(updatedWilsonState.getLastLogIndex())
@@ -122,10 +123,9 @@ public class StateMachineMessageApplier {
         .withLastElectionStarted(Optional.empty());
   }
 
-  public synchronized VoteResponse apply(VoteRequest voteRequest,
-                                         ClusterMember clusterMember) {
-    WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(wilsonState -> applyVoteRequest(wilsonState, voteRequest, clusterMember));
-    boolean voteGranted = updatedWilsonState.getLastVotedFor().isPresent() && updatedWilsonState.getLastVotedFor().get().equals(clusterMember);
+  public synchronized VoteResponse apply(VoteRequest voteRequest) {
+    WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(wilsonState -> applyVoteRequest(wilsonState, voteRequest));
+    boolean voteGranted = updatedWilsonState.getLastVotedFor().isPresent() && updatedWilsonState.getLastVotedFor().get().equals(voteRequest.getClusterMember());
     return VoteResponse.builder()
         .setTerm(updatedWilsonState.getCurrentTerm())
         .setVoteGranted(voteGranted)
@@ -133,8 +133,7 @@ public class StateMachineMessageApplier {
   }
 
   private WilsonState applyVoteRequest(WilsonState wilsonState,
-                                       VoteRequest voteRequest,
-                                       ClusterMember clusterMember) {
+                                       VoteRequest voteRequest) {
     if (voteRequest.getTerm() < wilsonState.getCurrentTerm()) {
       LOG.debug("Term on vote request ({}) is less than current term ({})", voteRequest.getTerm(), wilsonState.getCurrentTerm());
       return wilsonState;
@@ -145,7 +144,7 @@ public class StateMachineMessageApplier {
       return wilsonState
           .withCurrentTerm(voteRequest.getTerm())
           .withLeaderState(LeaderState.FOLLOWER)
-          .withLastVotedFor(clusterMember);
+          .withLastVotedFor(voteRequest.getClusterMember());
     }
 
     if (wilsonState.getLastVotedFor().isPresent() && voteRequest.getTerm() <= wilsonState.getCurrentTerm()) {
@@ -163,10 +162,10 @@ public class StateMachineMessageApplier {
       return wilsonState;
     }
 
-    LOG.debug("Voting for {}", clusterMember);
+    LOG.debug("Voting for {}", voteRequest.getClusterMember());
     return wilsonState
         .withCurrentTerm(voteRequest.getTerm())
-        .withLastVotedFor(clusterMember);
+        .withLastVotedFor(voteRequest.getClusterMember());
   }
 
   public synchronized void apply(VoteResponse voteResponse,

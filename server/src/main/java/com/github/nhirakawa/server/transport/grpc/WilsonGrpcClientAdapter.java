@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import com.github.nhirakawa.server.models.ClusterMember;
 import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
-import com.github.nhirakawa.server.models.messages.SerializedWilsonMessage;
 import com.github.nhirakawa.server.models.messages.VoteRequest;
 import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
@@ -38,7 +37,7 @@ public class WilsonGrpcClientAdapter {
   private final StateMachineMessageApplier messageApplier;
 
   private final Map<ClusterMemberModel, WilsonGrpcClient> clientMap;
-  private final Retryer<? super SerializedWilsonMessage> retryer;
+  private final Retryer<Void> retryer;
 
   @Inject
   WilsonGrpcClientAdapter(WilsonGrpcClientFactory clientFactory,
@@ -50,7 +49,7 @@ public class WilsonGrpcClientAdapter {
     this.messageApplier = messageApplier;
 
     this.clientMap = new ConcurrentHashMap<>();
-    this.retryer = RetryerBuilder.<SerializedWilsonMessage>newBuilder()
+    this.retryer = RetryerBuilder.<Void>newBuilder()
         .retryIfException()
         .withStopStrategy(StopStrategies.stopAfterDelay(1L, TimeUnit.SECONDS))
         .withWaitStrategy(WaitStrategies.fixedWait(1000L, TimeUnit.MILLISECONDS))
@@ -72,17 +71,12 @@ public class WilsonGrpcClientAdapter {
   }
 
   private void requestVoteWithRetries(VoteRequest voteRequest, ClusterMember clusterMember) {
-    try {
-      VoteResponse voteResponse = (VoteResponse) retryer.call(() -> requestVote(clusterMember, voteRequest));
-      messageApplier.apply(voteResponse, clusterMember);
-    } catch (ExecutionException | RetryException e) {
-      Throwable cause = e.getCause();
-      LOG.error("Encountered exception while requesting vote ({}: {})", cause.getClass().getSimpleName(), cause.getMessage(), cause);
-    }
+    VoteResponse voteResponse = requestVote(clusterMember, voteRequest);
+    messageApplier.apply(voteResponse, clusterMember);
   }
 
   private VoteResponse requestVote(ClusterMember clusterMember,
-                                        VoteRequest voteRequest) {
+                                   VoteRequest voteRequest) {
     WilsonGrpcClient client = getClientForMember(clusterMember);
     VoteResponse voteResponse = client.requestVoteSync(voteRequest);
     return voteResponse;
@@ -99,7 +93,10 @@ public class WilsonGrpcClientAdapter {
   private void sendHeartbeatWithRetries(HeartbeatRequest message, ClusterMember clusterMember) {
     WilsonGrpcClient client = getClientForMember(clusterMember);
     try {
-      retryer.call(() -> client.sendHeartbeatSync(message));
+      retryer.call(() -> {
+        client.sendHeartbeatSync(message);
+        return null;
+      });
     } catch (ExecutionException | RetryException e) {
       Throwable cause = e.getCause();
       LOG.error("Encountered exception while requesting vote ({}: {})", cause.getClass().getSimpleName(), cause.getMessage());

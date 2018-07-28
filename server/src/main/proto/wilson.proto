@@ -17,17 +17,17 @@ message HeartbeatResponseProto {
 }
 
 message VoteRequestProto {
-    ClusterMemberProto clusterMember = 1;
+    ClusterMemberProto cluster_member = 1;
     int64 term = 2;
-    int64 lastLogIndex = 3;
-    int64 lastLogTerm = 4;
+    int64 last_log_index = 3;
+    int64 last_log_term = 4;
     int64 timestamp = 5;
 }
 
 message VoteResponseProto {
-    ClusterMemberProto clusterMember = 1;
-    int64 currentTerm = 2;
-    bool voteGranted = 3;
+    ClusterMemberProto cluster_member = 1;
+    int64 term = 2;
+    bool vote_granted = 3;
     int64 timestamp = 4;
 }
 

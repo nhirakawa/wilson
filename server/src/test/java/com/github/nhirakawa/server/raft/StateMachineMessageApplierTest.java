@@ -104,6 +104,7 @@ public class StateMachineMessageApplierTest {
 
     verify(eventBus).post(voteRequestCaptor.capture());
     VoteRequest expectedVoteRequest = VoteRequest.builder()
+        .setClusterMember(LOCAL_SERVER)
         .setTerm(6L)
         .setLastLogTerm(4L)
         .setLastLogIndex(3L)
@@ -172,12 +173,13 @@ public class StateMachineMessageApplierTest {
     AtomicReference<WilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier stateMachineMessageApplier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
     VoteRequest voteRequest = VoteRequest.builder()
+        .setClusterMember(OTHER_SERVER)
         .setTerm(2L)
         .setLastLogIndex(1L)
         .setLastLogTerm(1L)
         .build();
 
-    VoteResponse voteResponse = stateMachineMessageApplier.apply(voteRequest, OTHER_SERVER);
+    VoteResponse voteResponse = stateMachineMessageApplier.apply(voteRequest);
     assertThat(voteResponse.getTerm()).isEqualTo(2L);
     assertThat(voteResponse.isVoteGranted()).isFalse();
 
@@ -197,12 +199,13 @@ public class StateMachineMessageApplierTest {
     AtomicReference<WilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier applier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
     VoteRequest voteRequest = VoteRequest.builder()
+        .setClusterMember(OTHER_SERVER)
         .setTerm(1L)
         .setLastLogTerm(1L)
         .setLastLogIndex(1L)
         .build();
 
-    VoteResponse voteResponse = applier.apply(voteRequest, OTHER_SERVER);
+    VoteResponse voteResponse = applier.apply(voteRequest);
     assertThat(voteResponse.getTerm()).isEqualTo(2L);
     assertThat(voteResponse.isVoteGranted()).isFalse();
   }
@@ -218,12 +221,13 @@ public class StateMachineMessageApplierTest {
     AtomicReference<WilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier applier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
     VoteRequest voteRequest = VoteRequest.builder()
+        .setClusterMember(OTHER_SERVER)
         .setTerm(2L)
         .setLastLogTerm(1L)
         .setLastLogIndex(1L)
         .build();
 
-    VoteResponseModel voteResponse = applier.apply(voteRequest, OTHER_SERVER);
+    VoteResponseModel voteResponse = applier.apply(voteRequest);
     assertThat(voteResponse.getTerm()).isEqualTo(2L);
     assertThat(voteResponse.isVoteGranted()).isFalse();
   }
@@ -238,12 +242,13 @@ public class StateMachineMessageApplierTest {
     AtomicReference<WilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier applier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
     VoteRequest voteRequest = VoteRequest.builder()
+        .setClusterMember(OTHER_SERVER)
         .setTerm(2L)
         .setLastLogTerm(2L)
         .setLastLogIndex(2L)
         .build();
 
-    VoteResponseModel voteResponse = applier.apply(voteRequest, OTHER_SERVER);
+    VoteResponseModel voteResponse = applier.apply(voteRequest);
     assertThat(voteResponse.getTerm()).isEqualTo(2L);
     assertThat(voteResponse.isVoteGranted()).isFalse();
   }
@@ -259,12 +264,13 @@ public class StateMachineMessageApplierTest {
     AtomicReference<WilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
     StateMachineMessageApplier stateMachineMessageApplier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
     VoteRequest voteRequest = VoteRequest.builder()
+        .setClusterMember(OTHER_SERVER)
         .setTerm(2L)
         .setLastLogTerm(1L)
         .setLastLogIndex(1L)
         .build();
 
-    VoteResponseModel voteResponse = stateMachineMessageApplier.apply(voteRequest, OTHER_SERVER);
+    VoteResponseModel voteResponse = stateMachineMessageApplier.apply(voteRequest);
     assertThat(voteResponse.isVoteGranted()).isTrue();
     assertThat(voteResponse.getTerm()).isEqualTo(voteRequest.getTerm());
 
@@ -506,12 +512,13 @@ public class StateMachineMessageApplierTest {
     StateMachineMessageApplier applier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
 
     VoteRequest voteRequest = VoteRequest.builder()
+        .setClusterMember(OTHER_SERVER)
         .setTerm(3L)
         .setLastLogTerm(3L)
         .setLastLogIndex(100L)
         .build();
 
-    applier.apply(voteRequest, OTHER_SERVER);
+    applier.apply(voteRequest);
 
     WilsonStateModel updatedWilsonState = wilsonStateReference.get();
     assertThat(updatedWilsonState.getLeaderState()).isEqualTo(LeaderState.FOLLOWER);
