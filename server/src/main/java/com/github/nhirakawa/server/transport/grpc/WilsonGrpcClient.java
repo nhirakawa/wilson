@@ -26,7 +26,6 @@ import io.grpc.netty.NettyChannelBuilder;
 
 public class WilsonGrpcClient {
 
-  private final WilsonGrpc.WilsonBlockingStub stub;
   private final WilsonGrpc.WilsonFutureStub futureStub;
 
   @AssistedInject
@@ -44,19 +43,18 @@ public class WilsonGrpcClient {
         .userAgent("Wilson/1.0")
         .build();
 
-    this.stub = WilsonGrpc.newBlockingStub(channel);
     this.futureStub = WilsonGrpc.newFutureStub(channel);
   }
 
   public VoteResponse requestVoteSync(VoteRequestModel voteRequest) {
     WilsonProtos.VoteRequest protoVoteRequest = ProtobufTranslator.toProto(voteRequest);
-    WilsonProtos.VoteResponse protoVoteResponse = stub.requestVote(protoVoteRequest);
+    WilsonProtos.VoteResponse protoVoteResponse = fromListenableFuture(futureStub.requestVote(protoVoteRequest)).join();
     return ProtobufTranslator.fromProto(protoVoteResponse);
   }
 
   public HeartbeatResponse sendHeartbeatSync(HeartbeatRequest heartbeatRequestModel) {
     WilsonProtos.HeartbeatRequest protoHeartbeatRequest = ProtobufTranslator.toProto(heartbeatRequestModel);
-    WilsonProtos.HeartbeatResponse protoHeartbeatResponse = stub.heartbeat(protoHeartbeatRequest);
+    WilsonProtos.HeartbeatResponse protoHeartbeatResponse = fromListenableFuture(futureStub.heartbeat(protoHeartbeatRequest)).join();
     return ProtobufTranslator.fromProto(protoHeartbeatResponse);
   }
 
