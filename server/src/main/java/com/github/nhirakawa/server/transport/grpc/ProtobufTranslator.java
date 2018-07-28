@@ -20,8 +20,8 @@ final class ProtobufTranslator {
     this.objectMapper = objectMapper;
   }
 
-  public static WilsonProtos.VoteRequest toProto(VoteRequestModel request) {
-    return WilsonProtos.VoteRequest.newBuilder()
+  public static VoteRequestProto toProto(VoteRequestModel request) {
+    return VoteRequestProto.newBuilder()
         .setTerm(request.getTerm())
         .setLastLogTerm(request.getLastLogTerm())
         .setLastLogIndex(request.getLastLogIndex())
@@ -29,20 +29,20 @@ final class ProtobufTranslator {
         .build();
   }
 
-  public static VoteResponse fromProto(WilsonProtos.VoteResponse voteResponse) {
+  public static VoteResponse fromProto(VoteResponseProto voteResponse) {
     return VoteResponse.builder()
         .setTerm(voteResponse.getCurrentTerm())
         .setVoteGranted(voteResponse.getVoteGranted())
         .build();
   }
 
-  public static WilsonProtos.HeartbeatRequest toProto(HeartbeatRequest heartbeatRequestModel) {
-    return WilsonProtos.HeartbeatRequest.newBuilder()
+  public static HeartbeatRequestProto toProto(HeartbeatRequest heartbeatRequestModel) {
+    return HeartbeatRequestProto.newBuilder()
         .setTimestamp(Instant.now().toEpochMilli())
         .build();
   }
 
-  public static HeartbeatResponse fromProto(WilsonProtos.HeartbeatResponse heartbeatResponse) {
+  public static HeartbeatResponse fromProto(HeartbeatResponseProto heartbeatResponse) {
     return HeartbeatResponse.builder().build();
   }
 }

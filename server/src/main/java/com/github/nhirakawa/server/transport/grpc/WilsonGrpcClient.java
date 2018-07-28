@@ -47,14 +47,14 @@ public class WilsonGrpcClient {
   }
 
   public VoteResponse requestVoteSync(VoteRequestModel voteRequest) {
-    WilsonProtos.VoteRequest protoVoteRequest = ProtobufTranslator.toProto(voteRequest);
-    WilsonProtos.VoteResponse protoVoteResponse = fromListenableFuture(futureStub.requestVote(protoVoteRequest)).join();
+    VoteRequestProto protoVoteRequest = ProtobufTranslator.toProto(voteRequest);
+    VoteResponseProto protoVoteResponse = fromListenableFuture(futureStub.requestVote(protoVoteRequest)).join();
     return ProtobufTranslator.fromProto(protoVoteResponse);
   }
 
   public HeartbeatResponse sendHeartbeatSync(HeartbeatRequest heartbeatRequestModel) {
-    WilsonProtos.HeartbeatRequest protoHeartbeatRequest = ProtobufTranslator.toProto(heartbeatRequestModel);
-    WilsonProtos.HeartbeatResponse protoHeartbeatResponse = fromListenableFuture(futureStub.heartbeat(protoHeartbeatRequest)).join();
+    HeartbeatRequestProto protoHeartbeatRequest = ProtobufTranslator.toProto(heartbeatRequestModel);
+    HeartbeatResponseProto protoHeartbeatResponse = fromListenableFuture(futureStub.heartbeat(protoHeartbeatRequest)).join();
     return ProtobufTranslator.fromProto(protoHeartbeatResponse);
   }
 

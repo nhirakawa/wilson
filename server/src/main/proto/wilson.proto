@@ -1,37 +1,37 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
 option java_package = "com.github.nhirakawa.server.transport.grpc";
-option java_outer_classname = "WilsonProtos";
 
 service Wilson {
-    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse) {}
-    rpc RequestVote (VoteRequest) returns (VoteResponse) {}
+    rpc Heartbeat (HeartbeatRequestProto) returns (HeartbeatResponseProto) {}
+    rpc RequestVote (VoteRequestProto) returns (VoteResponseProto) {}
 }
 
-message HeartbeatRequest {
+message HeartbeatRequestProto {
     int64 timestamp = 1;
 }
 
-message HeartbeatResponse {
+message HeartbeatResponseProto {
     int64 timestamp = 1;
 }
 
-message VoteRequest {
-    ClusterMember clusterMember = 1;
+message VoteRequestProto {
+    ClusterMemberProto clusterMember = 1;
     int64 term = 2;
     int64 lastLogIndex = 3;
     int64 lastLogTerm = 4;
     int64 timestamp = 5;
 }
 
-message VoteResponse {
-    ClusterMember clusterMember = 1;
+message VoteResponseProto {
+    ClusterMemberProto clusterMember = 1;
     int64 currentTerm = 2;
     bool voteGranted = 3;
     int64 timestamp = 4;
 }
 
-message ClusterMember {
+message ClusterMemberProto {
     string host = 1;
     int32 port = 2;
 }

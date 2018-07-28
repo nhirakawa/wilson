@@ -26,15 +26,15 @@ public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
   }
 
   @Override
-  public void heartbeat(WilsonProtos.HeartbeatRequest request, StreamObserver<WilsonProtos.HeartbeatResponse> responseObserver) {
+  public void heartbeat(HeartbeatRequestProto request, StreamObserver<HeartbeatResponseProto> responseObserver) {
     HeartbeatRequest heartbeatRequest = HeartbeatRequest.builder().build();
     messageApplier.apply(heartbeatRequest);
-    responseObserver.onNext(WilsonProtos.HeartbeatResponse.getDefaultInstance());
+    responseObserver.onNext(HeartbeatResponseProto.getDefaultInstance());
     responseObserver.onCompleted();
   }
 
   @Override
-  public void requestVote(WilsonProtos.VoteRequest request, StreamObserver<WilsonProtos.VoteResponse> responseObserver) {
+  public void requestVote(VoteRequestProto request, StreamObserver<VoteResponseProto> responseObserver) {
     ClusterMember clusterMember = ClusterMember.builder()
         .setHost(request.getClusterMember().getHost())
         .setPort(request.getClusterMember().getPort())
@@ -48,11 +48,11 @@ public class WilsonGrpcService extends WilsonGrpc.WilsonImplBase {
 
     VoteResponse voteResponse = messageApplier.apply(voteRequest, clusterMember);
 
-    WilsonProtos.VoteResponse response = WilsonProtos.VoteResponse.newBuilder()
+    VoteResponseProto response = VoteResponseProto.newBuilder()
         .setClusterMember(
-            WilsonProtos.ClusterMember.newBuilder()
-            .setHost(localMember.getHost())
-            .setPort(localMember.getPort())
+            ClusterMemberProto.newBuilder()
+                .setHost(localMember.getHost())
+                .setPort(localMember.getPort())
         )
         .setVoteGranted(voteResponse.isVoteGranted())
         .setCurrentTerm(voteResponse.getTerm())
