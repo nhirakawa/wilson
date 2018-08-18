@@ -1,14 +1,14 @@
-package com.github.nhirakawa.server.guice;
+package com.github.nhirakawa.server.dagger;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.inject.BindingAnnotation;
+import javax.inject.Qualifier;
 
-@BindingAnnotation
+@Qualifier
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ServerWorkerGroup {
+public @interface LocalMember {
 }

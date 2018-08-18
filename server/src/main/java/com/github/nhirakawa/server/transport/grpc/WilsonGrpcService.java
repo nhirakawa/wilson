@@ -1,18 +1,19 @@
 package com.github.nhirakawa.server.transport.grpc;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.dagger.LocalMember;
 import com.github.nhirakawa.server.models.ClusterMember;
 import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.server.models.messages.VoteRequest;
 import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import io.grpc.stub.StreamObserver;
 

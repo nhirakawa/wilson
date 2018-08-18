@@ -2,16 +2,18 @@ package com.github.nhirakawa.server.transport;
 
 import java.io.IOException;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.dagger.LocalMember;
 import com.github.nhirakawa.server.models.ClusterMember;
 import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.timeout.ElectionTimeout;
 import com.github.nhirakawa.server.timeout.HeartbeatTimeout;
 import com.github.nhirakawa.server.timeout.LeaderTimeout;
-import com.google.inject.Inject;
+import com.github.nhirakawa.server.transport.grpc.EagerSingletons;
 
 import io.grpc.Server;
 
@@ -23,6 +25,7 @@ public class WilsonServer {
   private final LeaderTimeout leaderTimeout;
   private final ElectionTimeout electionTimeout;
   private final HeartbeatTimeout heartbeatTimeout;
+  private final EagerSingletons eagerSingletons;
   private final ClusterMemberModel clusterMember;
 
   @Inject
@@ -30,11 +33,13 @@ public class WilsonServer {
                       LeaderTimeout leaderTimeout,
                       ElectionTimeout electionTimeout,
                       HeartbeatTimeout heartbeatTimeout,
+                      EagerSingletons eagerSingletons,
                       @LocalMember ClusterMember clusterMember) {
     this.server = server;
     this.leaderTimeout = leaderTimeout;
     this.electionTimeout = electionTimeout;
     this.heartbeatTimeout = heartbeatTimeout;
+    this.eagerSingletons = eagerSingletons;
     this.clusterMember = clusterMember;
   }
 
@@ -44,6 +49,7 @@ public class WilsonServer {
     leaderTimeout.start();
     electionTimeout.start();
     heartbeatTimeout.start();
+    eagerSingletons.start();
     server.awaitTermination();
   }
 }

@@ -2,13 +2,14 @@ package com.github.nhirakawa.server.timeout;
 
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.github.nhirakawa.server.config.ConfigPath;
-import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.dagger.LocalMember;
 import com.github.nhirakawa.server.models.ClusterMember;
-import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
 import com.github.nhirakawa.server.models.messages.ElectionTimeoutMessage;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
 import com.typesafe.config.Config;
 
 @Singleton

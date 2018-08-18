@@ -13,21 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-
 import com.github.nhirakawa.server.config.ConfigPath;
 import com.github.nhirakawa.server.config.ConfigValidator;
-import com.github.nhirakawa.server.guice.WilsonRaftModule;
-import com.github.nhirakawa.server.guice.WilsonTransportModule;
+import com.github.nhirakawa.server.dagger.DaggerWilsonServerComponent;
+import com.github.nhirakawa.server.dagger.WilsonDaggerModule;
 import com.github.nhirakawa.server.jackson.ObjectMapperWrapper;
 import com.github.nhirakawa.server.models.ClusterMember;
-import com.github.nhirakawa.server.transport.WilsonServer;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
@@ -92,8 +88,11 @@ public class WilsonRunner {
     );
 
     try {
-      Injector injector = Guice.createInjector(new WilsonRaftModule(configWithLocalMember), new WilsonTransportModule(clusterMember, clusterWithoutLocalMember));
-      injector.getInstance(WilsonServer.class).start();
+      DaggerWilsonServerComponent.builder()
+          .wilsonDaggerModule(new WilsonDaggerModule(configWithLocalMember, clusterMember, clusterWithoutLocalMember))
+          .build()
+          .create()
+          .start();
     } catch (IOException | InterruptedException e) {
       LOG.error("Could not bootstrap {}", clusterMember, e);
       Throwables.throwIfUnchecked(e);

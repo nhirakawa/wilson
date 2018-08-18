@@ -1,9 +1,10 @@
 package com.github.nhirakawa.server.transport.grpc.intercept;
 
+import javax.inject.Inject;
+
 import com.github.nhirakawa.server.config.ConfigPath;
-import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.dagger.LocalMember;
 import com.github.nhirakawa.server.models.ClusterMember;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 import io.grpc.CallOptions;
