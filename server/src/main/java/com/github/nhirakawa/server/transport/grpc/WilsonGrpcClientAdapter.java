@@ -6,6 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +18,6 @@ import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.server.models.messages.VoteRequest;
 import com.github.nhirakawa.server.models.messages.VoteResponse;
 import com.github.nhirakawa.server.raft.StateMachineMessageApplier;
-import com.github.nhirakawa.server.transport.grpc.WilsonGrpcClient.WilsonGrpcClientFactory;
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
@@ -24,8 +26,6 @@ import com.github.rholder.retry.WaitStrategies;
 import com.google.common.eventbus.DeadEvent;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 @Singleton
 public class WilsonGrpcClientAdapter {

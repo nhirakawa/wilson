@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.github.nhirakawa.server.models.ClusterMemberModel;
-import com.github.nhirakawa.server.guice.LocalMember;
+import com.github.nhirakawa.server.dagger.LocalMember;
 import com.google.common.base.Preconditions;
 
 abstract class BaseTimeout {

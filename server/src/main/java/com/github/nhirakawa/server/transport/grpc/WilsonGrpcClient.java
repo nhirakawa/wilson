@@ -8,18 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.config.ConfigPath;
-import com.github.nhirakawa.server.transport.grpc.intercept.ClientHeaderInterceptor;
+import com.github.nhirakawa.server.models.ClusterMemberModel;
 import com.github.nhirakawa.server.models.messages.HeartbeatRequest;
 import com.github.nhirakawa.server.models.messages.HeartbeatResponse;
 import com.github.nhirakawa.server.models.messages.VoteRequestModel;
 import com.github.nhirakawa.server.models.messages.VoteResponse;
+import com.github.nhirakawa.server.transport.grpc.intercept.ClientHeaderInterceptor;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.protobuf.GeneratedMessageV3;
 import com.typesafe.config.Config;
 
@@ -35,8 +33,7 @@ public class WilsonGrpcClient {
   private final WilsonGrpc.WilsonFutureStub futureStub;
   private final ProtobufTranslator protobufTranslator;
 
-  @AssistedInject
-  WilsonGrpcClient(@Assisted ClusterMemberModel clusterMember,
+  WilsonGrpcClient(ClusterMemberModel clusterMember,
                    ClientHeaderInterceptor clientHeaderInterceptor,
                    Config config,
                    SocketAddressProvider socketAddressProvider,
@@ -92,9 +89,5 @@ public class WilsonGrpcClient {
       }
     });
     return completableFuture;
-  }
-
-  public interface WilsonGrpcClientFactory {
-    WilsonGrpcClient create(ClusterMemberModel clusterMember);
   }
 }
