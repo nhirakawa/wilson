@@ -2,6 +2,7 @@ package com.github.nhirakawa.wilson.server.models;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -53,10 +54,21 @@ public interface WilsonStateModel {
     return maybeLogItem.map(LogItemModel::getIndex).orElse(1L);
   }
 
+  // Volatile state - reinitialized on server start
   @Value.Default
   default long getCommitIndex() {
     return 0L;
   }
+
+  @Value.Default
+  default long getLastApplied() {
+    return 0L;
+  }
+
+  // Volatile leader state - reinitialized after election
+  Map<ClusterMember, Long> getNextIndex();
+
+  Map<ClusterMember, Long> getMatchIndex();
 
   @Value.Check
   default void check() {
