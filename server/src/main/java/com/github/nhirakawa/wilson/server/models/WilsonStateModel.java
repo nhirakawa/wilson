@@ -65,7 +65,7 @@ public interface WilsonStateModel {
     Preconditions.checkState(getLastLogIndex() >= 0, "last log index must be >= 0");
 
     if (getLeaderState() == LeaderState.FOLLOWER) {
-
+      Preconditions.checkState(getVotesReceivedFrom().isEmpty(), "Cannot have votes if there is no election");
     } else if (getLeaderState() == LeaderState.CANDIDATE) {
       Preconditions.checkState(!getVotesReceivedFrom().isEmpty(), "must have at least one vote if I am candidate");
       Preconditions.checkState(getLastVotedFor().isPresent(), "must have voted for myself if I am candidate");
@@ -74,6 +74,7 @@ public interface WilsonStateModel {
       Preconditions.checkState(!getLastElectionStarted().isPresent(), "last election cannot be set when leader");
       Preconditions.checkState(!getLastVotedFor().isPresent(), "cannot have outstanding vote when leader");
       Preconditions.checkState(getCurrentLeader().isPresent(), "current leader must be set because I am leader");
+      Preconditions.checkState(getVotesReceivedFrom().isEmpty(), "Cannot have votes if election is over");
     }
   }
 

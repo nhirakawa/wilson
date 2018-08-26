@@ -120,10 +120,13 @@ public class StateMachineMessageApplier {
     LOG.debug("Election started {} but timeout occurred at {}. Transitioning back to follower.", electionTimeoutInstant, timeout);
 
     // transition back to follower
-    return wilsonState
-        .withLeaderState(LeaderState.FOLLOWER)
-        .withLastVotedFor(Optional.empty())
-        .withLastElectionStarted(Optional.empty());
+    return WilsonState.builder()
+        .from(wilsonState)
+        .setLeaderState(LeaderState.FOLLOWER)
+        .setLastVotedFor(Optional.empty())
+        .setLastElectionStarted(Optional.empty())
+        .setVotesReceivedFrom(Collections.emptySet())
+        .build();
   }
 
   public synchronized VoteResponse apply(VoteRequest voteRequest) {
@@ -144,10 +147,13 @@ public class StateMachineMessageApplier {
 
     if (voteRequest.getTerm() > wilsonState.getCurrentTerm()) {
       LOG.debug("Term on vote request ({}) is later than current term ({}). Transitioning to follower.", voteRequest.getTerm(), wilsonState.getCurrentTerm());
-      return wilsonState
-          .withCurrentTerm(voteRequest.getTerm())
-          .withLeaderState(LeaderState.FOLLOWER)
-          .withLastVotedFor(voteRequest.getClusterMember());
+      return WilsonState.builder()
+          .from(wilsonState)
+          .setCurrentTerm(voteRequest.getTerm())
+          .setLeaderState(LeaderState.FOLLOWER)
+          .setLastVotedFor(voteRequest.getClusterMember())
+          .setVotesReceivedFrom(Collections.emptySet())
+          .build();
     }
 
     if (wilsonState.getLastVotedFor().isPresent() && voteRequest.getTerm() <= wilsonState.getCurrentTerm()) {
