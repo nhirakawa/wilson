@@ -563,6 +563,25 @@ public class StateMachineMessageApplierTest {
     verifyZeroInteractions(eventBus);
   }
 
+  @Test
+  public void itNoOpsIfVoteReceivedAndNotLeader() {
+    WilsonState wilsonState = WilsonState.builder()
+        .setLeaderState(LeaderState.FOLLOWER)
+        .build();
+
+    AtomicReference<WilsonState> wilsonStateReference = new AtomicReference<>(wilsonState);
+    StateMachineMessageApplier applier = buildMessageApplier(ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER), wilsonStateReference);
+
+    VoteResponse voteResponse = VoteResponse.builder()
+        .setTerm(100L)
+        .setVoteGranted(true)
+        .build();
+
+    applier.apply(voteResponse, OTHER_SERVER);
+
+    verifyZeroInteractions(eventBus);
+  }
+
   private StateMachineMessageApplier buildMessageApplier(Set<ClusterMember> clusterMembers, AtomicReference<WilsonState> wilsonStateReference) {
     return new StateMachineMessageApplier(wilsonStateReference, clusterMembers, LOCAL_SERVER, eventBus);
   }

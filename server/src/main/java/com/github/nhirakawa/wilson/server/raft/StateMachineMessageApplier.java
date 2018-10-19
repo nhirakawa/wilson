@@ -184,6 +184,10 @@ public class StateMachineMessageApplier {
       return wilsonState;
     }
 
+    if (wilsonState.getLeaderState() != LeaderState.CANDIDATE) {
+      return wilsonState;
+    }
+
     WilsonState updatedWilsonState = WilsonState.builder()
         .from(wilsonState)
         .addVotesReceivedFrom(clusterMember)
