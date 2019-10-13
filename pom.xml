@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>server</module>
+    <module>wilson-server</module>
     <module>wilson-client</module>
     <module>wilson-models</module>
   </modules>
