@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
+import com.github.nhirakawa.wilson.models.ClusterMemberModel;
 import com.github.nhirakawa.wilson.server.config.ConfigPath;
-import com.github.nhirakawa.wilson.server.models.ClusterMemberModel;
 import com.typesafe.config.Config;
 
 import io.grpc.inprocess.InProcessSocketAddress;

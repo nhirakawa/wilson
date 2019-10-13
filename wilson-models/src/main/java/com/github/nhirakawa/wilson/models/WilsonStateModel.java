@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.models;
+package com.github.nhirakawa.wilson.models;
 
 import java.time.Instant;
 import java.util.List;
@@ -8,8 +8,7 @@ import java.util.Set;
 
 import org.immutables.value.Value;
 
-import com.github.nhirakawa.wilson.server.models.style.WilsonStyle;
-import com.github.nhirakawa.wilson.server.raft.LeaderState;
+import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 

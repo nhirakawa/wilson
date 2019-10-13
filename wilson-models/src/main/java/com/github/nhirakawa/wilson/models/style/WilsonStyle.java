@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.models.style;
+package com.github.nhirakawa.wilson.models.style;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

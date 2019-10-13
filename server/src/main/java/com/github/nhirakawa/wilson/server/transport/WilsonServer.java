@@ -7,9 +7,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.nhirakawa.wilson.models.ClusterMember;
+import com.github.nhirakawa.wilson.models.ClusterMemberModel;
 import com.github.nhirakawa.wilson.server.dagger.LocalMember;
-import com.github.nhirakawa.wilson.server.models.ClusterMember;
-import com.github.nhirakawa.wilson.server.models.ClusterMemberModel;
 import com.github.nhirakawa.wilson.server.timeout.ElectionTimeout;
 import com.github.nhirakawa.wilson.server.timeout.HeartbeatTimeout;
 import com.github.nhirakawa.wilson.server.timeout.LeaderTimeout;

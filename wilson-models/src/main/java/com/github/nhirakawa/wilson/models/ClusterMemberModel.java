@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.models;
+package com.github.nhirakawa.wilson.models;
 
 import java.net.InetSocketAddress;
 
@@ -7,7 +7,7 @@ import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.nhirakawa.wilson.server.models.style.WilsonStyle;
+import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 
 @Immutable
 @WilsonStyle

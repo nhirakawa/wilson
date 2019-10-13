@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.raft;
+package com.github.nhirakawa.wilson.models;
 
 public enum LeaderState {
 

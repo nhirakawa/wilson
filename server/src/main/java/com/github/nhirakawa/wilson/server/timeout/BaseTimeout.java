@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.github.nhirakawa.wilson.server.models.ClusterMemberModel;
+import com.github.nhirakawa.wilson.models.ClusterMemberModel;
 import com.github.nhirakawa.wilson.server.dagger.LocalMember;
 import com.google.common.base.Preconditions;
 

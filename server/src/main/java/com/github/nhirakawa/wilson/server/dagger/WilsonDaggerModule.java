@@ -13,9 +13,9 @@ import javax.inject.Singleton;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.github.nhirakawa.wilson.models.ClusterMember;
+import com.github.nhirakawa.wilson.models.WilsonState;
 import com.github.nhirakawa.wilson.server.config.ConfigPath;
-import com.github.nhirakawa.wilson.server.models.ClusterMember;
-import com.github.nhirakawa.wilson.server.models.WilsonState;
 import com.github.nhirakawa.wilson.server.transport.grpc.SocketAddressProvider;
 import com.github.nhirakawa.wilson.server.transport.grpc.WilsonGrpcService;
 import com.github.nhirakawa.wilson.server.transport.grpc.intercept.LoggingInterceptor;
@@ -38,117 +38,117 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 @Module
 public class WilsonDaggerModule {
 
-  private final Config config;
-  private final ClusterMember localMember;
-  private Set<ClusterMember> clusterMembers;
+	private final Config config;
+	private final ClusterMember localMember;
+	private Set<ClusterMember> clusterMembers;
 
-  public WilsonDaggerModule(Config config,
-                            ClusterMember localMember,
-                            Set<ClusterMember> clusterMembers) {
-    this.config = config;
-    this.localMember = localMember;
-    this.clusterMembers = clusterMembers;
-  }
+	public WilsonDaggerModule(Config config,
+														ClusterMember localMember,
+														Set<ClusterMember> clusterMembers) {
+		this.config = config;
+		this.localMember = localMember;
+		this.clusterMembers = clusterMembers;
+	}
 
-  @Provides
-  protected Config provideConfig() {
-    return config;
-  }
+	@Provides
+	protected Config provideConfig() {
+		return config;
+	}
 
-  @Provides
-  @LocalMember
-  protected ClusterMember provideLocalMember() {
-    return localMember;
-  }
+	@Provides
+	@LocalMember
+	protected ClusterMember provideLocalMember() {
+		return localMember;
+	}
 
-  @Provides
-  protected Set<ClusterMember> provideClusterMembers() {
-    return clusterMembers;
-  }
+	@Provides
+	protected Set<ClusterMember> provideClusterMembers() {
+		return clusterMembers;
+	}
 
-  @Provides
-  @Singleton
-  AtomicReference<WilsonState> provideWilsonState() {
-    WilsonState wilsonState = WilsonState.builder().build();
-    return new AtomicReference<>(wilsonState);
-  }
+	@Provides
+	@Singleton
+	AtomicReference<WilsonState> provideWilsonState() {
+		WilsonState wilsonState = WilsonState.builder().build();
+		return new AtomicReference<>(wilsonState);
+	}
 
-  @Provides
-  @Singleton
-  protected static ObjectMapper provideObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
+	@Provides
+	@Singleton
+	protected static ObjectMapper provideObjectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
 
-    objectMapper.registerModule(new GuavaModule());
-    objectMapper.registerModule(new ProtobufModule());
+		objectMapper.registerModule(new GuavaModule());
+		objectMapper.registerModule(new ProtobufModule());
 
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-    return objectMapper;
-  }
+		return objectMapper;
+	}
 
-  @Provides
-  @Singleton
-  protected JsonFormat.Printer provideJsonFormatPrinter() {
-    return JsonFormat.printer().includingDefaultValueFields();
-  }
+	@Provides
+	@Singleton
+	protected JsonFormat.Printer provideJsonFormatPrinter() {
+		return JsonFormat.printer().includingDefaultValueFields();
+	}
 
-  @Provides
-  @Singleton
-  protected EventBus provideEventBus() {
-    EventBus eventBus = new EventBus();
-    return eventBus;
-  }
+	@Provides
+	@Singleton
+	protected EventBus provideEventBus() {
+		EventBus eventBus = new EventBus();
+		return eventBus;
+	}
 
-  @Provides
-  @Singleton
-  Retryer<Void> provideRetryer() {
-    return RetryerBuilder.<Void>newBuilder()
-        .withWaitStrategy(WaitStrategies.fixedWait(5, TimeUnit.SECONDS))
-        .build();
-  }
+	@Provides
+	@Singleton
+	Retryer<Void> provideRetryer() {
+		return RetryerBuilder.<Void>newBuilder()
+				.withWaitStrategy(WaitStrategies.fixedWait(5, TimeUnit.SECONDS))
+				.build();
+	}
 
-  @Provides
-  @Singleton
-  ScheduledExecutorService provideScheduledExecutorService(@LocalMember ClusterMember localMember) {
-    return Executors.newScheduledThreadPool(
-        4,
-        getNamedThreadFactory("wilson-scheduled", localMember)
-    );
-  }
+	@Provides
+	@Singleton
+	ScheduledExecutorService provideScheduledExecutorService(@LocalMember ClusterMember localMember) {
+		return Executors.newScheduledThreadPool(
+				4,
+				getNamedThreadFactory("wilson-scheduled", localMember)
+		);
+	}
 
-  @Provides
-  @Singleton
-  protected Server provideServer(Config config,
-                                 SocketAddressProvider socketAddressProvider,
-                                 WilsonGrpcService wilsonGrpcService,
-                                 LoggingInterceptor loggingInterceptor,
-                                 @LocalMember ClusterMember localMember) {
-    ExecutorService executorService = Executors.newCachedThreadPool(
-        getNamedThreadFactory("grpc-server", localMember)
-    );
+	@Provides
+	@Singleton
+	protected Server provideServer(Config config,
+																 SocketAddressProvider socketAddressProvider,
+																 WilsonGrpcService wilsonGrpcService,
+																 LoggingInterceptor loggingInterceptor,
+																 @LocalMember ClusterMember localMember) {
+		ExecutorService executorService = Executors.newCachedThreadPool(
+				getNamedThreadFactory("grpc-server", localMember)
+		);
 
-    if (config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath())) {
-      InProcessServerBuilder builder = InProcessServerBuilder.forName(localMember.getServerId());
-      builder.addService(wilsonGrpcService);
-      builder.intercept(loggingInterceptor);
-      builder.executor(executorService);
-      return builder.build();
-    } else {
-      NettyServerBuilder builder = NettyServerBuilder.forAddress(socketAddressProvider.getSocketAddressFor(localMember));
-      builder.channelType(NioServerSocketChannel.class);
-      builder.addService(wilsonGrpcService);
-      builder.intercept(loggingInterceptor);
-      builder.executor(executorService);
-      return builder.build();
-    }
-  }
+		if (config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath())) {
+			InProcessServerBuilder builder = InProcessServerBuilder.forName(localMember.getServerId());
+			builder.addService(wilsonGrpcService);
+			builder.intercept(loggingInterceptor);
+			builder.executor(executorService);
+			return builder.build();
+		} else {
+			NettyServerBuilder builder = NettyServerBuilder.forAddress(socketAddressProvider.getSocketAddressFor(localMember));
+			builder.channelType(NioServerSocketChannel.class);
+			builder.addService(wilsonGrpcService);
+			builder.intercept(loggingInterceptor);
+			builder.executor(executorService);
+			return builder.build();
+		}
+	}
 
-  private static ThreadFactory getNamedThreadFactory(String namespace,
-                                                     ClusterMember clusterMember) {
-    String format = String.format("%s-%s-%s", namespace, clusterMember.getHost(), clusterMember.getPort());
-    return new ThreadFactoryBuilder()
-        .setNameFormat(format + "-%s")
-        .build();
-  }
+	private static ThreadFactory getNamedThreadFactory(String namespace,
+																										 ClusterMember clusterMember) {
+		String format = String.format("%s-%s-%s", namespace, clusterMember.getHost(), clusterMember.getPort());
+		return new ThreadFactoryBuilder()
+				.setNameFormat(format + "-%s")
+				.build();
+	}
 
 }
