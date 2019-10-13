@@ -10,6 +10,6 @@ import dagger.Component;
 @Component(modules = WilsonDaggerModule.class)
 public interface WilsonServerComponent {
 
-  WilsonServer create();
+	WilsonServer create();
 
 }

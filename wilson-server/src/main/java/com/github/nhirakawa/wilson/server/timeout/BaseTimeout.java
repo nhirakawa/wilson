@@ -16,61 +16,62 @@ import com.google.common.base.Preconditions;
 
 abstract class BaseTimeout {
 
-  private static final Logger LOG = LoggerFactory.getLogger(BaseTimeout.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BaseTimeout.class);
 
-  private static final long INITIAL_DELAY = 0L;
+	private static final long INITIAL_DELAY = 0L;
 
-  private final ScheduledExecutorService scheduledExecutorService;
-  private final long period;
-  private final String serverId;
+	private final ScheduledExecutorService scheduledExecutorService;
+	private final long period;
+	private final String serverId;
 
-  private Optional<ScheduledFuture<?>> scheduledFuture;
+	private Optional<ScheduledFuture<?>> scheduledFuture;
 
-  protected BaseTimeout(ScheduledExecutorService scheduledExecutorService,
-                        long period,
-                        @LocalMember ClusterMemberModel clusterMember) {
-    this.scheduledExecutorService = scheduledExecutorService;
-    this.period = period + ThreadLocalRandom.current().nextInt(50, 150);
-    this.serverId = clusterMember.getServerId();
+	protected BaseTimeout(ScheduledExecutorService scheduledExecutorService,
+												long period,
+												@LocalMember ClusterMemberModel clusterMember) {
+		this.scheduledExecutorService = scheduledExecutorService;
+		this.period = period + ThreadLocalRandom.current().nextInt(50, 150);
+		this.serverId = clusterMember.getServerId();
 
-    this.scheduledFuture = Optional.empty();
-  }
+		this.scheduledFuture = Optional.empty();
+	}
 
-  protected abstract void doTimeout() throws Exception;
+	protected abstract void doTimeout() throws Exception;
 
-  protected long getPeriod() {
-    return period;
-  }
+	protected long getPeriod() {
+		return period;
+	}
 
-  public void start() {
-    Preconditions.checkState(
-        !scheduledFuture.isPresent(),
-        "%s is already started",
-        getClass().getSimpleName()
-    );
+	public void start() {
+		Preconditions.checkState(
+				!scheduledFuture.isPresent(),
+				"%s is already started",
+				getClass().getSimpleName()
+		);
 
-    scheduledFuture = Optional.of(
-        scheduledExecutorService.scheduleAtFixedRate(
-            this::doSafeTimeout,
-            INITIAL_DELAY,
-            period,
-            TimeUnit.MILLISECONDS
-        )
-    );
-  }
+		scheduledFuture = Optional.of(
+				scheduledExecutorService.scheduleAtFixedRate(
+						this::doSafeTimeout,
+						INITIAL_DELAY,
+						period,
+						TimeUnit.MILLISECONDS
+				)
+		);
+	}
 
-  public void stop() {
-    scheduledFuture.ifPresent(future -> future.cancel(false));
-  }
+	public void stop() {
+		scheduledFuture.ifPresent(future -> future.cancel(false));
+	}
 
-  private void doSafeTimeout() {
-    MDC.put("serverId", serverId);
-    try {
-      doTimeout();
-    } catch (Exception e) {
-      LOG.error("Timeout encountered exception", e);
-    } finally {
-      MDC.remove("serverId");
-    }
-  }
+	private void doSafeTimeout() {
+		MDC.put("serverId", serverId);
+		try {
+			doTimeout();
+		} catch (Exception e) {
+			LOG.error("Timeout encountered exception", e);
+		} finally {
+			MDC.remove("serverId");
+		}
+	}
+
 }

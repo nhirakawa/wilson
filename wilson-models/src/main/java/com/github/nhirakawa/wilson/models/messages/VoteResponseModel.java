@@ -8,7 +8,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @Immutable
 public interface VoteResponseModel {
 
-  long getTerm();
-  boolean isVoteGranted();
+	long getTerm();
+	boolean isVoteGranted();
 
 }

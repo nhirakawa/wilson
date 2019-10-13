@@ -15,24 +15,25 @@ import io.grpc.inprocess.InProcessSocketAddress;
 
 public class SocketAddressProvider {
 
-  private final boolean isLocalMode;
-  private final Map<ClusterMemberModel, SocketAddress> socketAddressMap;
+	private final boolean isLocalMode;
+	private final Map<ClusterMemberModel, SocketAddress> socketAddressMap;
 
-  @Inject
-  SocketAddressProvider(Config config) {
-    this.isLocalMode = config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath());
-    this.socketAddressMap = new ConcurrentHashMap<>();
-  }
+	@Inject
+	SocketAddressProvider(Config config) {
+		this.isLocalMode = config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath());
+		this.socketAddressMap = new ConcurrentHashMap<>();
+	}
 
-  public SocketAddress getSocketAddressFor(ClusterMemberModel clusterMember) {
-    return socketAddressMap.computeIfAbsent(clusterMember, this::getSocketAddress);
-  }
+	public SocketAddress getSocketAddressFor(ClusterMemberModel clusterMember) {
+		return socketAddressMap.computeIfAbsent(clusterMember, this::getSocketAddress);
+	}
 
-  private SocketAddress getSocketAddress(ClusterMemberModel clusterMember) {
-    if (isLocalMode) {
-      return new InProcessSocketAddress(clusterMember.getServerId());
-    } else {
-      return new InetSocketAddress(clusterMember.getHost(), clusterMember.getPort());
-    }
-  }
+	private SocketAddress getSocketAddress(ClusterMemberModel clusterMember) {
+		if (isLocalMode) {
+			return new InProcessSocketAddress(clusterMember.getServerId());
+		} else {
+			return new InetSocketAddress(clusterMember.getHost(), clusterMember.getPort());
+		}
+	}
+
 }

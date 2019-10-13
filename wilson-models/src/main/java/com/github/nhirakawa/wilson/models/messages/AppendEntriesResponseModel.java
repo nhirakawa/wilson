@@ -9,7 +9,7 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @Immutable
 public interface AppendEntriesResponseModel {
 
-  long getTerm();
-  AppendEntriesResult getResult();
+	long getTerm();
+	AppendEntriesResult getResult();
 
 }

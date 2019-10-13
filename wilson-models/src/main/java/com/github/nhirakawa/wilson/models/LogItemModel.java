@@ -10,8 +10,8 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @WilsonStyle
 public interface LogItemModel {
 
-  long getTerm();
-  long getIndex();
-  List<Byte> getBytes();
+	long getTerm();
+	long getIndex();
+	List<Byte> getBytes();
 
 }

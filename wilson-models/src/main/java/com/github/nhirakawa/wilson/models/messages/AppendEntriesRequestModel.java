@@ -12,11 +12,11 @@ import com.google.protobuf.ByteString;
 @Immutable
 public interface AppendEntriesRequestModel {
 
-  long getTerm();
-  ClusterMember getLeader();
-  long getLastLogIndex();
-  long getLastLogTerm();
-  List<ByteString> getEntries();
-  long getLeaderCommitIndex();
+	long getTerm();
+	ClusterMember getLeader();
+	long getLastLogIndex();
+	long getLastLogTerm();
+	List<ByteString> getEntries();
+	long getLeaderCommitIndex();
 
 }

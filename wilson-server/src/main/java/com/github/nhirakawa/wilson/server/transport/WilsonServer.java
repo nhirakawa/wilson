@@ -19,37 +19,38 @@ import io.grpc.Server;
 
 public class WilsonServer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(WilsonServer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(WilsonServer.class);
 
-  private final Server server;
-  private final LeaderTimeout leaderTimeout;
-  private final ElectionTimeout electionTimeout;
-  private final HeartbeatTimeout heartbeatTimeout;
-  private final EagerSingletons eagerSingletons;
-  private final ClusterMemberModel clusterMember;
+	private final Server server;
+	private final LeaderTimeout leaderTimeout;
+	private final ElectionTimeout electionTimeout;
+	private final HeartbeatTimeout heartbeatTimeout;
+	private final EagerSingletons eagerSingletons;
+	private final ClusterMemberModel clusterMember;
 
-  @Inject
-  public WilsonServer(Server server,
-                      LeaderTimeout leaderTimeout,
-                      ElectionTimeout electionTimeout,
-                      HeartbeatTimeout heartbeatTimeout,
-                      EagerSingletons eagerSingletons,
-                      @LocalMember ClusterMember clusterMember) {
-    this.server = server;
-    this.leaderTimeout = leaderTimeout;
-    this.electionTimeout = electionTimeout;
-    this.heartbeatTimeout = heartbeatTimeout;
-    this.eagerSingletons = eagerSingletons;
-    this.clusterMember = clusterMember;
-  }
+	@Inject
+	public WilsonServer(Server server,
+											LeaderTimeout leaderTimeout,
+											ElectionTimeout electionTimeout,
+											HeartbeatTimeout heartbeatTimeout,
+											EagerSingletons eagerSingletons,
+											@LocalMember ClusterMember clusterMember) {
+		this.server = server;
+		this.leaderTimeout = leaderTimeout;
+		this.electionTimeout = electionTimeout;
+		this.heartbeatTimeout = heartbeatTimeout;
+		this.eagerSingletons = eagerSingletons;
+		this.clusterMember = clusterMember;
+	}
 
-  public void start() throws InterruptedException, IOException {
-    server.start();
-    LOG.info("Wilson grpc server started for {}", clusterMember.getServerId());
-    leaderTimeout.start();
-    electionTimeout.start();
-    heartbeatTimeout.start();
-    eagerSingletons.start();
-    server.awaitTermination();
-  }
+	public void start() throws InterruptedException, IOException {
+		server.start();
+		LOG.info("Wilson grpc server started for {}", clusterMember.getServerId());
+		leaderTimeout.start();
+		electionTimeout.start();
+		heartbeatTimeout.start();
+		eagerSingletons.start();
+		server.awaitTermination();
+	}
+
 }

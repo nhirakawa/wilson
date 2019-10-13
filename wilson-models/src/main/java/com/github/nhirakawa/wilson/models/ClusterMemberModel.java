@@ -13,16 +13,17 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @WilsonStyle
 public abstract class ClusterMemberModel {
 
-  @Default
-  public String getHost() {
-    return "localhost";
-  }
+	@Default
+	public String getHost() {
+		return "localhost";
+	}
 
-  public abstract int getPort();
+	public abstract int getPort();
 
-  @Derived
-  @JsonIgnore
-  public String getServerId() {
-    return InetSocketAddress.createUnresolved(getHost(), getPort()).toString();
-  }
+	@Derived
+	@JsonIgnore
+	public String getServerId() {
+		return InetSocketAddress.createUnresolved(getHost(), getPort()).toString();
+	}
+
 }

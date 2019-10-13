@@ -51,6 +51,27 @@ public class WilsonDaggerModule {
 	}
 
 	@Provides
+	@Singleton
+	protected static ObjectMapper provideObjectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		objectMapper.registerModule(new GuavaModule());
+		objectMapper.registerModule(new ProtobufModule());
+
+		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+		return objectMapper;
+	}
+
+	private static ThreadFactory getNamedThreadFactory(String namespace,
+																										 ClusterMember clusterMember) {
+		String format = String.format("%s-%s-%s", namespace, clusterMember.getHost(), clusterMember.getPort());
+		return new ThreadFactoryBuilder()
+				.setNameFormat(format + "-%s")
+				.build();
+	}
+
+	@Provides
 	protected Config provideConfig() {
 		return config;
 	}
@@ -71,19 +92,6 @@ public class WilsonDaggerModule {
 	AtomicReference<WilsonState> provideWilsonState() {
 		WilsonState wilsonState = WilsonState.builder().build();
 		return new AtomicReference<>(wilsonState);
-	}
-
-	@Provides
-	@Singleton
-	protected static ObjectMapper provideObjectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		objectMapper.registerModule(new GuavaModule());
-		objectMapper.registerModule(new ProtobufModule());
-
-		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-		return objectMapper;
 	}
 
 	@Provides
@@ -141,14 +149,6 @@ public class WilsonDaggerModule {
 			builder.executor(executorService);
 			return builder.build();
 		}
-	}
-
-	private static ThreadFactory getNamedThreadFactory(String namespace,
-																										 ClusterMember clusterMember) {
-		String format = String.format("%s-%s-%s", namespace, clusterMember.getHost(), clusterMember.getPort());
-		return new ThreadFactoryBuilder()
-				.setNameFormat(format + "-%s")
-				.build();
 	}
 
 }

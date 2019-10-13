@@ -11,8 +11,9 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @WilsonStyle
 public interface UuidWilsonMessageModel {
 
-  @Value.Default
-  default String getUuid() {
-    return UUID.randomUUID().toString();
-  }
+	@Value.Default
+	default String getUuid() {
+		return UUID.randomUUID().toString();
+	}
+
 }

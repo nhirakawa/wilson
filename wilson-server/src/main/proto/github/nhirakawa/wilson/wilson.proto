@@ -6,8 +6,10 @@ option java_multiple_files = true;
 option java_package = "com.github.nhirakawa.wilson.server.transport.grpc";
 
 service Wilson {
-    rpc AppendEntries (AppendEntriesRequestProto) returns (AppendEntriesResponseProto) {}
-    rpc RequestVote (VoteRequestProto) returns (VoteResponseProto) {}
+    rpc AppendEntries (AppendEntriesRequestProto) returns (AppendEntriesResponseProto) {
+    }
+    rpc RequestVote (VoteRequestProto) returns (VoteResponseProto) {
+    }
 }
 
 message HeartbeatRequestProto {

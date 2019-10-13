@@ -46,19 +46,6 @@ public class WilsonGrpcClient {
 		this.protobufTranslator = protobufTranslator;
 	}
 
-	public VoteResponse requestVoteSync(VoteRequestModel voteRequest) {
-		VoteRequestProto protoVoteRequest = protobufTranslator.toProto(voteRequest);
-		VoteResponseProto protoVoteResponse = fromListenableFuture(futureStub.requestVote(protoVoteRequest)).join();
-		return protobufTranslator.fromProto(protoVoteResponse);
-	}
-
-	public AppendEntriesResponse sendHeartbeat(AppendEntriesRequest appendEntriesRequest) {
-		AppendEntriesRequestProto appendEntriesRequestProto = protobufTranslator.toProto(appendEntriesRequest);
-		return fromListenableFuture(futureStub.appendEntries(appendEntriesRequestProto))
-				.thenApply(protobufTranslator::fromProto)
-				.join();
-	}
-
 	private static <T extends GeneratedMessageV3> CompletableFuture<T> fromListenableFuture(ListenableFuture<T> future) {
 		CompletableFuture<T> completableFuture = new CompletableFuture<>();
 		Futures.addCallback(future, new FutureCallback<T>() {
@@ -73,6 +60,19 @@ public class WilsonGrpcClient {
 			}
 		});
 		return completableFuture;
+	}
+
+	public VoteResponse requestVoteSync(VoteRequestModel voteRequest) {
+		VoteRequestProto protoVoteRequest = protobufTranslator.toProto(voteRequest);
+		VoteResponseProto protoVoteResponse = fromListenableFuture(futureStub.requestVote(protoVoteRequest)).join();
+		return protobufTranslator.fromProto(protoVoteResponse);
+	}
+
+	public AppendEntriesResponse sendHeartbeat(AppendEntriesRequest appendEntriesRequest) {
+		AppendEntriesRequestProto appendEntriesRequestProto = protobufTranslator.toProto(appendEntriesRequest);
+		return fromListenableFuture(futureStub.appendEntries(appendEntriesRequestProto))
+				.thenApply(protobufTranslator::fromProto)
+				.join();
 	}
 
 }

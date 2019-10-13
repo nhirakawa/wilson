@@ -9,9 +9,9 @@ import com.github.nhirakawa.wilson.models.style.WilsonStyle;
 @Immutable
 public interface VoteRequestModel {
 
-  ClusterMember getClusterMember();
-  long getTerm();
-  long getLastLogIndex();
-  long getLastLogTerm();
+	ClusterMember getClusterMember();
+	long getTerm();
+	long getLastLogIndex();
+	long getLastLogTerm();
 
 }

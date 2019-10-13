@@ -13,30 +13,30 @@ import com.google.inject.Injector;
 
 public class WilsonClient implements Runnable {
 
-  private final ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
 
-  @Inject
-  public WilsonClient(ObjectMapper objectMapper) {
-    this.objectMapper = objectMapper;
-  }
+	@Inject
+	public WilsonClient(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
 
-  @Override
-  public void run() {
-    String host = "localhost";
-    int port = 9000;
-    try (Socket socket = new Socket(host, port)) {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-      while (reader.ready()) {
-        System.out.println(reader.readLine());
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
+	public static void main(String... args) {
+		Injector injector = Guice.createInjector(new WilsonClientModule());
+		injector.getInstance(WilsonClient.class).run();
+	}
 
-  public static void main(String... args) {
-    Injector injector = Guice.createInjector(new WilsonClientModule());
-    injector.getInstance(WilsonClient.class).run();
-  }
+	@Override
+	public void run() {
+		String host = "localhost";
+		int port = 9000;
+		try (Socket socket = new Socket(host, port)) {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			while (reader.ready()) {
+				System.out.println(reader.readLine());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
