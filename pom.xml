@@ -11,6 +11,7 @@
     <module>wilson-server</module>
     <module>wilson-client</module>
     <module>wilson-models</module>
+    <module>wilson-grpc-core</module>
   </modules>
 
   <properties>
