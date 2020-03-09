@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>wilson-server</artifactId>
+  <artifactId>wilson-grpc-server</artifactId>
 
   <dependencies>
     <dependency>
