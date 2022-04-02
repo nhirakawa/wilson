@@ -13,6 +13,7 @@ import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.eventbus.EventBus;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.util.JsonFormat;
 import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
@@ -30,10 +31,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Module
 public class WilsonDaggerModule {
+  public static final String GRPC_CLIENT_FUTURE_EXECUTOR =
+    "grpc-client-future-executor";
   private final Config config;
   private final ClusterMember localMember;
   private Set<ClusterMember> clusterMembers;
@@ -161,5 +165,12 @@ public class WilsonDaggerModule {
       builder.executor(executorService);
       return builder.build();
     }
+  }
+
+  @Provides
+  @Singleton
+  @Named(GRPC_CLIENT_FUTURE_EXECUTOR)
+  ExecutorService provideGrpcClientFutureExecutor() {
+    return MoreExecutors.newDirectExecutorService();
   }
 }
