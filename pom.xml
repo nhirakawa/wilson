@@ -18,6 +18,7 @@
     <module>wilson-client</module>
     <module>wilson-models</module>
     <module>wilson-grpc-core</module>
+    <module>wilson-http</module>
   </modules>
 
   <properties>
