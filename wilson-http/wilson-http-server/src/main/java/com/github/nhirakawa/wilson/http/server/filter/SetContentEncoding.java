@@ -6,9 +6,8 @@ import spark.Response;
 
 public class SetContentEncoding implements Filter {
 
-	@Override
-	public void handle(Request request, Response response) {
-		response.header("Content-Encoding", "gzip");
-	}
-
+  @Override
+  public void handle(Request request, Response response) {
+    response.header("Content-Encoding", "gzip");
+  }
 }
