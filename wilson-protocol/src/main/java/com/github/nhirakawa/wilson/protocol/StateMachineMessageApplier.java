@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.raft;
+package com.github.nhirakawa.wilson.protocol;
 
 import com.github.nhirakawa.wilson.models.AppendEntriesResult;
 import com.github.nhirakawa.wilson.models.ClusterMember;
@@ -11,7 +11,6 @@ import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
 import com.github.nhirakawa.wilson.models.WilsonState;
-import com.github.nhirakawa.wilson.server.dagger.LocalMember;
 import com.google.common.eventbus.EventBus;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

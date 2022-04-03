@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.dagger;
+package com.github.nhirakawa.wilson.protocol;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

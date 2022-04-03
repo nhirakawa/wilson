@@ -3,8 +3,10 @@ package com.github.nhirakawa.wilson.server.dagger;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.github.nhirakawa.wilson.common.NamedThreadFactory;
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.models.WilsonState;
+import com.github.nhirakawa.wilson.protocol.LocalMember;
 import com.github.nhirakawa.wilson.server.config.ConfigPath;
 import com.github.nhirakawa.wilson.server.transport.grpc.intercept.LoggingInterceptor;
 import com.github.nhirakawa.wilson.server.transport.grpc.SocketAddressProvider;
@@ -34,19 +36,6 @@ import javax.inject.Singleton;
 
 @Module
 public class WilsonDaggerModule {
-  private final Config config;
-  private final ClusterMember localMember;
-  private Set<ClusterMember> clusterMembers;
-
-  public WilsonDaggerModule(
-    Config config,
-    ClusterMember localMember,
-    Set<ClusterMember> clusterMembers
-  ) {
-    this.config = config;
-    this.localMember = localMember;
-    this.clusterMembers = clusterMembers;
-  }
 
   @Provides
   @Singleton
@@ -61,53 +50,12 @@ public class WilsonDaggerModule {
     return objectMapper;
   }
 
-  private static ThreadFactory getNamedThreadFactory(
-    String namespace,
-    ClusterMember clusterMember
-  ) {
-    String format = String.format(
-      "%s-%s-%s",
-      namespace,
-      clusterMember.getHost(),
-      clusterMember.getPort()
-    );
-    return new ThreadFactoryBuilder().setNameFormat(format + "-%s").build();
-  }
 
-  @Provides
-  protected Config provideConfig() {
-    return config;
-  }
-
-  @Provides
-  @LocalMember
-  protected ClusterMember provideLocalMember() {
-    return localMember;
-  }
-
-  @Provides
-  protected Set<ClusterMember> provideClusterMembers() {
-    return clusterMembers;
-  }
-
-  @Provides
-  @Singleton
-  AtomicReference<WilsonState> provideWilsonState() {
-    WilsonState wilsonState = WilsonState.builder().build();
-    return new AtomicReference<>(wilsonState);
-  }
 
   @Provides
   @Singleton
   protected JsonFormat.Printer provideJsonFormatPrinter() {
     return JsonFormat.printer().includingDefaultValueFields();
-  }
-
-  @Provides
-  @Singleton
-  protected EventBus provideEventBus() {
-    EventBus eventBus = new EventBus();
-    return eventBus;
   }
 
   @Provides
@@ -121,17 +69,6 @@ public class WilsonDaggerModule {
 
   @Provides
   @Singleton
-  ScheduledExecutorService provideScheduledExecutorService(
-    @LocalMember ClusterMember localMember
-  ) {
-    return Executors.newScheduledThreadPool(
-      4,
-      getNamedThreadFactory("wilson-scheduled", localMember)
-    );
-  }
-
-  @Provides
-  @Singleton
   protected Server provideServer(
     Config config,
     SocketAddressProvider socketAddressProvider,
@@ -140,7 +77,7 @@ public class WilsonDaggerModule {
     @LocalMember ClusterMember localMember
   ) {
     ExecutorService executorService = Executors.newCachedThreadPool(
-      getNamedThreadFactory("grpc-server", localMember)
+        NamedThreadFactory.build("grpc-server", localMember)
     );
 
     if (config.getBoolean(ConfigPath.WILSON_LOCAL_CLUSTER.getPath())) {

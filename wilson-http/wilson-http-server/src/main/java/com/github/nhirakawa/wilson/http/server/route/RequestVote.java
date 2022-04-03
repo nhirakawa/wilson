@@ -6,9 +6,8 @@ import spark.Route;
 
 public class RequestVote implements Route {
 
-	@Override
-	public Object handle(Request request, Response response) throws Exception {
-		throw new UnsupportedOperationException();
-	}
-
+  @Override
+  public Object handle(Request request, Response response) throws Exception {
+    throw new UnsupportedOperationException();
+  }
 }

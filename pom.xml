@@ -14,11 +14,13 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>wilson-grpc-server</module>
+<!--    <module>wilson-grpc-server</module>-->
     <module>wilson-client</module>
     <module>wilson-models</module>
-    <module>wilson-grpc-core</module>
+<!--    <module>wilson-grpc-core</module>-->
     <module>wilson-http</module>
+    <module>wilson-protocol</module>
+    <module>wilson-common</module>
   </modules>
 
   <properties>
