@@ -7,7 +7,11 @@ abstract class BaseTimeout extends AbstractScheduledService {
   private final Duration period;
 
   protected BaseTimeout(long period) {
-    this.period = Duration.ofMillis(period);
+    this(Duration.ofMillis(period));
+  }
+
+  protected BaseTimeout(Duration period) {
+    this.period = period;
   }
 
   @Override

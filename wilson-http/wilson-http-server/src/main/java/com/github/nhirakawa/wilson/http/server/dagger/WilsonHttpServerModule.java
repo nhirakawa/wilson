@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.http.server;
+package com.github.nhirakawa.wilson.http.server.dagger;
 
 import com.github.nhirakawa.wilson.protocol.timeout.ElectionTimeout;
 import com.github.nhirakawa.wilson.protocol.timeout.HeartbeatTimeout;

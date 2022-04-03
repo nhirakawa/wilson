@@ -3,8 +3,8 @@ package com.github.nhirakawa.wilson.protocol;
 import com.github.nhirakawa.wilson.common.NamedThreadFactory;
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.models.WilsonState;
+import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
 import com.google.common.eventbus.EventBus;
-import com.typesafe.config.Config;
 import dagger.Module;
 import dagger.Provides;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,34 +15,26 @@ import javax.inject.Singleton;
 
 @Module
 public class WilsonProtocolModule {
-  private final Config config;
-  private final ClusterMember localMember;
-  private Set<ClusterMember> clusterMembers;
+  private final WilsonConfig wilsonConfig;
 
-  public WilsonProtocolModule(
-    Config config,
-    ClusterMember localMember,
-    Set<ClusterMember> clusterMembers
-  ) {
-    this.config = config;
-    this.localMember = localMember;
-    this.clusterMembers = clusterMembers;
+  public WilsonProtocolModule(WilsonConfig wilsonConfig) {
+    this.wilsonConfig = wilsonConfig;
   }
 
   @Provides
-  protected Config provideConfig() {
-    return config;
+  protected WilsonConfig provideConfig() {
+    return wilsonConfig;
   }
 
   @Provides
   @LocalMember
-  protected ClusterMember provideLocalMember() {
-    return localMember;
+  static ClusterMember provideLocalMember(WilsonConfig wilsonConfig) {
+    return wilsonConfig.getLocalMember();
   }
 
   @Provides
-  protected Set<ClusterMember> provideClusterMembers() {
-    return clusterMembers;
+  static Set<ClusterMember> provideClusterMembers(WilsonConfig wilsonConfig) {
+    return wilsonConfig.getClusterMembers();
   }
 
   @Provides
