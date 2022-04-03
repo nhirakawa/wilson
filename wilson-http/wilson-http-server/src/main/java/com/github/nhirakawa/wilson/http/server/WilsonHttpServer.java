@@ -15,8 +15,8 @@ public class WilsonHttpServer extends AbstractIdleService {
   protected void startUp() throws Exception {
     port(8080); // todo config
     before(new SetRequestId(), new SetRequestStartedTimestamp());
-    post("/entries", new AppendEntries());
-    post("/vote", new RequestVote());
+    post("/raft/entries", new AppendEntries());
+    post("/raft/vote", new RequestVote());
     after(new SetContentEncoding());
   }
 
