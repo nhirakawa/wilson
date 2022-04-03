@@ -21,18 +21,17 @@ public class HeartbeatTimeout extends BaseTimeout {
     StateMachineMessageApplier applier,
     @LocalMember ClusterMember clusterMember
   ) {
-    super(
-      scheduledExecutorService,
-      config.getLong(ConfigPath.WILSON_HEARTBEAT_TIMEOUT.getPath()),
-      clusterMember
-    );
+    super(config.getLong(ConfigPath.WILSON_HEARTBEAT_TIMEOUT.getPath()));
     this.applier = applier;
   }
 
   @Override
-  protected void doTimeout() {
+  protected void runOneIteration() {
     applier.apply(
-      HeartbeatTimeoutMessage.builder().setHeartbeatTimeout(getPeriod()).build()
+      HeartbeatTimeoutMessage
+        .builder()
+        .setHeartbeatTimeout(getPeriod().toMillis())
+        .build()
     );
   }
 }

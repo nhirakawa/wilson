@@ -1,76 +1,21 @@
 package com.github.nhirakawa.wilson.protocol.timeout;
 
-import com.github.nhirakawa.wilson.models.ClusterMemberModel;
-import com.github.nhirakawa.wilson.protocol.LocalMember;
-import com.google.common.base.Preconditions;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import com.google.common.util.concurrent.AbstractScheduledService;
+import java.time.Duration;
 
-abstract class BaseTimeout {
-  private static final Logger LOG = LoggerFactory.getLogger(BaseTimeout.class);
+abstract class BaseTimeout extends AbstractScheduledService {
+  private final Duration period;
 
-  private static final long INITIAL_DELAY = 0L;
-
-  private final ScheduledExecutorService scheduledExecutorService;
-  private final long period;
-  private final String serverId;
-
-  private Optional<ScheduledFuture<?>> scheduledFuture;
-
-  protected BaseTimeout(
-    ScheduledExecutorService scheduledExecutorService,
-    long period,
-    @LocalMember ClusterMemberModel clusterMember
-  ) {
-    this.scheduledExecutorService = scheduledExecutorService;
-    this.period = period + ThreadLocalRandom.current().nextInt(50, 150);
-    this.serverId = clusterMember.getServerId();
-
-    this.scheduledFuture = Optional.empty();
+  protected BaseTimeout(long period) {
+    this.period = Duration.ofMillis(period);
   }
 
-  protected abstract void doTimeout() throws Exception;
+  @Override
+  protected Scheduler scheduler() {
+    return new JitterScheduler(getPeriod());
+  }
 
-  protected long getPeriod() {
+  public Duration getPeriod() {
     return period;
-  }
-
-  public void start() {
-    Preconditions.checkState(
-      !scheduledFuture.isPresent(),
-      "%s is already started",
-      getClass().getSimpleName()
-    );
-
-    scheduledFuture =
-      Optional.of(
-        scheduledExecutorService.scheduleAtFixedRate(
-          this::doSafeTimeout,
-          INITIAL_DELAY,
-          period,
-          TimeUnit.MILLISECONDS
-        )
-      );
-  }
-
-  public void stop() {
-    scheduledFuture.ifPresent(future -> future.cancel(false));
-  }
-
-  private void doSafeTimeout() {
-    MDC.put("serverId", serverId);
-    try {
-      doTimeout();
-    } catch (Exception e) {
-      LOG.error("Timeout encountered exception", e);
-    } finally {
-      MDC.remove("serverId");
-    }
   }
 }

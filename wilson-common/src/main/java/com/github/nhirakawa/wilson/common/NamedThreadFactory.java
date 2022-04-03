@@ -10,6 +10,10 @@ public final class NamedThreadFactory {
     throw new UnsupportedOperationException();
   }
 
+  public static ThreadFactory build(String namespace) {
+    return new ThreadFactoryBuilder().setNameFormat(namespace + "-%s").build();
+  }
+
   public static ThreadFactory build(
     String namespace,
     ClusterMember clusterMember

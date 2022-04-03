@@ -19,18 +19,17 @@ public class LeaderTimeout extends BaseTimeout {
     StateMachineMessageApplier stateMachineMessageApplier,
     @LocalMember ClusterMember clusterMember
   ) {
-    super(
-      scheduledExecutorService,
-      config.getLong(ConfigPath.WILSON_LEADER_TIMEOUT.getPath()),
-      clusterMember
-    );
+    super(config.getLong(ConfigPath.WILSON_LEADER_TIMEOUT.getPath()));
     this.stateMachineMessageApplier = stateMachineMessageApplier;
   }
 
   @Override
-  protected void doTimeout() {
+  protected void runOneIteration() throws Exception {
     stateMachineMessageApplier.apply(
-      LeaderTimeoutMessage.builder().setLeaderTimeout(getPeriod()).build()
+      LeaderTimeoutMessage
+        .builder()
+        .setLeaderTimeout(getPeriod().toMillis())
+        .build()
     );
   }
 }
