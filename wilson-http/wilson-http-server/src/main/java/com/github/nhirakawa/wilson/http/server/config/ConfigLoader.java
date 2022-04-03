@@ -1,13 +1,14 @@
 package com.github.nhirakawa.wilson.http.server.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.nhirakawa.wilson.common.ObjectMapperWrapper;
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigRenderOptions;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -83,29 +84,26 @@ public final class ConfigLoader {
   }
 
   private static ClusterMember parseLocalClusterMember(Config config) {
-    try {
-      return ObjectMapperWrapper
-        .instance()
-        .readValue(
-          config
-            .getObject("wilson.local")
-            .render(ConfigRenderOptions.concise()),
-          ClusterMember.class
-        );
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    return parseFromConfigObject(config.getObject("wilson.local"));
   }
 
   private static Set<ClusterMember> parseClusterMembers(Config config) {
+    return config
+      .getObjectList("wilson.cluster")
+      .stream()
+      .map(ConfigLoader::parseFromConfigObject)
+      .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private static ClusterMember parseFromConfigObject(
+    ConfigObject configObject
+  ) {
     try {
       return ObjectMapperWrapper
         .instance()
         .readValue(
-          config
-            .getObject("wilson.cluster")
-            .render(ConfigRenderOptions.concise()),
-          new TypeReference<Set<ClusterMember>>() {}
+          configObject.render(ConfigRenderOptions.concise()),
+          ClusterMember.class
         );
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);

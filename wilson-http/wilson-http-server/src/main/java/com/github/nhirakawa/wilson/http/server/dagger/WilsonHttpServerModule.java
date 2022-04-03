@@ -1,5 +1,6 @@
 package com.github.nhirakawa.wilson.http.server.dagger;
 
+import com.github.nhirakawa.wilson.http.server.WilsonHttpServer;
 import com.github.nhirakawa.wilson.protocol.timeout.ElectionTimeout;
 import com.github.nhirakawa.wilson.protocol.timeout.HeartbeatTimeout;
 import com.github.nhirakawa.wilson.protocol.timeout.LeaderTimeout;
@@ -16,12 +17,18 @@ public class WilsonHttpServerModule {
   @Provides
   @Singleton
   static ServiceManager provideServiceManager(
+    WilsonHttpServer wilsonHttpServer,
     ElectionTimeout electionTimeout,
     LeaderTimeout leaderTimeout,
     HeartbeatTimeout heartbeatTimeout
   ) {
     return new ServiceManager(
-      ImmutableList.of(electionTimeout, leaderTimeout, heartbeatTimeout)
+      ImmutableList.of(
+        wilsonHttpServer,
+        electionTimeout,
+        leaderTimeout,
+        heartbeatTimeout
+      )
     );
   }
 }
