@@ -1,6 +1,10 @@
 package com.github.nhirakawa.wilson.http.server;
 
-import static spark.Spark.*;
+import static spark.Spark.after;
+import static spark.Spark.before;
+import static spark.Spark.port;
+import static spark.Spark.post;
+import static spark.Spark.stop;
 
 import com.github.nhirakawa.wilson.http.server.filter.after.IncrementRequestCounter;
 import com.github.nhirakawa.wilson.http.server.filter.before.SetContentEncoding;
@@ -18,6 +22,7 @@ public class WilsonHttpServer extends AbstractIdleService {
   private final Provider<SetRequestStartedTimestamp> setRequestStartedTimestampProvider;
   private final Provider<IncrementRequestCounter> incrementRequestCounterProvider;
   private final Provider<AppendEntries> appendEntriesProvider;
+  private final Provider<RequestVote> requestVoteProvider;
 
   @Inject
   public WilsonHttpServer(
@@ -25,7 +30,8 @@ public class WilsonHttpServer extends AbstractIdleService {
     Provider<SetRequestId> setRequestIdProvider,
     Provider<SetRequestStartedTimestamp> setRequestStartedTimestampProvider,
     Provider<IncrementRequestCounter> incrementRequestCounterProvider,
-    Provider<AppendEntries> appendEntriesProvider
+    Provider<AppendEntries> appendEntriesProvider,
+    Provider<RequestVote> requestVoteProvider
   ) {
     this.setContentEncodingProvider = setContentEncodingProvider;
     this.setRequestIdProvider = setRequestIdProvider;
@@ -33,6 +39,7 @@ public class WilsonHttpServer extends AbstractIdleService {
       setRequestStartedTimestampProvider;
     this.incrementRequestCounterProvider = incrementRequestCounterProvider;
     this.appendEntriesProvider = appendEntriesProvider;
+    this.requestVoteProvider = requestVoteProvider;
   }
 
   @Override
@@ -43,7 +50,7 @@ public class WilsonHttpServer extends AbstractIdleService {
       setRequestStartedTimestampProvider.get()
     );
     post("/raft/entries", appendEntriesProvider.get());
-    post("/raft/vote", new RequestVote());
+    post("/raft/vote", requestVoteProvider.get());
     after(
       setContentEncodingProvider.get(),
       incrementRequestCounterProvider.get()
