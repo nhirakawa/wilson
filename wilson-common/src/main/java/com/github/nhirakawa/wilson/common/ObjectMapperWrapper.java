@@ -1,19 +1,13 @@
-package com.github.nhirakawa.wilson.server.jackson;
+package com.github.nhirakawa.wilson.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.nhirakawa.wilson.server.config.ConfigPath;
+import com.github.nhirakawa.wilson.common.config.ConfigPath;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigRenderOptions;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class ObjectMapperWrapper {
-  private static final Logger LOG = LoggerFactory.getLogger(
-    ObjectMapperWrapper.class
-  );
-
   private static final ObjectMapper INSTANCE = buildInstance();
   private static final ConfigRenderOptions CONFIG_RENDER_OPTIONS = ConfigRenderOptions.concise();
 

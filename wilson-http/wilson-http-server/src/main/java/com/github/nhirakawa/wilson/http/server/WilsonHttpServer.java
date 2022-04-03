@@ -17,19 +17,22 @@ public class WilsonHttpServer extends AbstractIdleService {
   private final Provider<SetRequestId> setRequestIdProvider;
   private final Provider<SetRequestStartedTimestamp> setRequestStartedTimestampProvider;
   private final Provider<IncrementRequestCounter> incrementRequestCounterProvider;
+  private final Provider<AppendEntries> appendEntriesProvider;
 
   @Inject
   public WilsonHttpServer(
     Provider<SetContentEncoding> setContentEncodingProvider,
     Provider<SetRequestId> setRequestIdProvider,
     Provider<SetRequestStartedTimestamp> setRequestStartedTimestampProvider,
-    Provider<IncrementRequestCounter> incrementRequestCounterProvider
+    Provider<IncrementRequestCounter> incrementRequestCounterProvider,
+    Provider<AppendEntries> appendEntriesProvider
   ) {
     this.setContentEncodingProvider = setContentEncodingProvider;
     this.setRequestIdProvider = setRequestIdProvider;
     this.setRequestStartedTimestampProvider =
       setRequestStartedTimestampProvider;
     this.incrementRequestCounterProvider = incrementRequestCounterProvider;
+    this.appendEntriesProvider = appendEntriesProvider;
   }
 
   @Override
@@ -39,7 +42,7 @@ public class WilsonHttpServer extends AbstractIdleService {
       setRequestIdProvider.get(),
       setRequestStartedTimestampProvider.get()
     );
-    post("/raft/entries", new AppendEntries());
+    post("/raft/entries", appendEntriesProvider.get());
     post("/raft/vote", new RequestVote());
     after(
       setContentEncodingProvider.get(),

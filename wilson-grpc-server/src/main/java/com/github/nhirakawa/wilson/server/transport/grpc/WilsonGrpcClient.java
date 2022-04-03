@@ -5,7 +5,7 @@ import com.github.nhirakawa.wilson.models.messages.AppendEntriesRequest;
 import com.github.nhirakawa.wilson.models.messages.AppendEntriesResponse;
 import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
-import com.github.nhirakawa.wilson.server.config.ConfigPath;
+import com.github.nhirakawa.wilson.common.config.ConfigPath;
 import com.github.nhirakawa.wilson.server.transport.grpc.intercept.ClientHeaderInterceptor;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;

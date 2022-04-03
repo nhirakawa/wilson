@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.config;
+package com.github.nhirakawa.wilson.common.config;
 
 public enum ConfigPath {
   WILSON_CLUSTER_ID("wilson.clusterId"),

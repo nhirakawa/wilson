@@ -1,7 +1,7 @@
 package com.github.nhirakawa.wilson.server.transport.grpc;
 
 import com.github.nhirakawa.wilson.models.ClusterMemberModel;
-import com.github.nhirakawa.wilson.server.config.ConfigPath;
+import com.github.nhirakawa.wilson.common.config.ConfigPath;
 import com.typesafe.config.Config;
 import io.grpc.inprocess.InProcessSocketAddress;
 import java.net.InetSocketAddress;

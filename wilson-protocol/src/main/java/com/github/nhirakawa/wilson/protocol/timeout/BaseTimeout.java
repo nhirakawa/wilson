@@ -1,7 +1,7 @@
-package com.github.nhirakawa.wilson.server.timeout;
+package com.github.nhirakawa.wilson.protocol.timeout;
 
 import com.github.nhirakawa.wilson.models.ClusterMemberModel;
-import com.github.nhirakawa.wilson.server.dagger.LocalMember;
+import com.github.nhirakawa.wilson.protocol.LocalMember;
 import com.google.common.base.Preconditions;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;

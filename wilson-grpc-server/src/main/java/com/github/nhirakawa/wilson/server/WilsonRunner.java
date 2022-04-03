@@ -2,11 +2,11 @@ package com.github.nhirakawa.wilson.server;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.nhirakawa.wilson.models.ClusterMember;
-import com.github.nhirakawa.wilson.server.config.ConfigPath;
-import com.github.nhirakawa.wilson.server.config.ConfigValidator;
+import com.github.nhirakawa.wilson.common.config.ConfigPath;
+import com.github.nhirakawa.wilson.common.config.ConfigValidator;
 import com.github.nhirakawa.wilson.server.dagger.DaggerWilsonServerComponent;
 import com.github.nhirakawa.wilson.server.dagger.WilsonDaggerModule;
-import com.github.nhirakawa.wilson.server.jackson.ObjectMapperWrapper;
+import com.github.nhirakawa.wilson.common.ObjectMapperWrapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;

@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.server.config;
+package com.github.nhirakawa.wilson.common.config;
 
 import com.google.common.base.Preconditions;
 import com.typesafe.config.Config;

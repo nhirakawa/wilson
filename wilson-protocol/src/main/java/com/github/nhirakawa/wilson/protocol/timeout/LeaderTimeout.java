@@ -1,10 +1,10 @@
-package com.github.nhirakawa.wilson.server.timeout;
+package com.github.nhirakawa.wilson.protocol.timeout;
 
+import com.github.nhirakawa.wilson.common.config.ConfigPath;
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
-import com.github.nhirakawa.wilson.server.config.ConfigPath;
-import com.github.nhirakawa.wilson.server.dagger.LocalMember;
-import com.github.nhirakawa.wilson.server.raft.StateMachineMessageApplier;
+import com.github.nhirakawa.wilson.protocol.LocalMember;
+import com.github.nhirakawa.wilson.protocol.StateMachineMessageApplier;
 import com.typesafe.config.Config;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;

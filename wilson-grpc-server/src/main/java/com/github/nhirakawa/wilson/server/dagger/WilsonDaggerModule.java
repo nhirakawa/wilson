@@ -5,17 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.github.nhirakawa.wilson.common.NamedThreadFactory;
 import com.github.nhirakawa.wilson.models.ClusterMember;
-import com.github.nhirakawa.wilson.models.WilsonState;
 import com.github.nhirakawa.wilson.protocol.LocalMember;
-import com.github.nhirakawa.wilson.server.config.ConfigPath;
+import com.github.nhirakawa.wilson.common.config.ConfigPath;
 import com.github.nhirakawa.wilson.server.transport.grpc.intercept.LoggingInterceptor;
 import com.github.nhirakawa.wilson.server.transport.grpc.SocketAddressProvider;
 import com.github.nhirakawa.wilson.server.transport.grpc.WilsonGrpcService;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.WaitStrategies;
-import com.google.common.eventbus.EventBus;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.util.JsonFormat;
 import com.hubspot.jackson.datatype.protobuf.ProtobufModule;
 import com.typesafe.config.Config;
@@ -25,13 +22,11 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.netty.NettyServerBuilder;
 import io.grpc.Server;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import java.util.concurrent.atomic.AtomicReference;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.Set;
+
 import javax.inject.Singleton;
 
 @Module
