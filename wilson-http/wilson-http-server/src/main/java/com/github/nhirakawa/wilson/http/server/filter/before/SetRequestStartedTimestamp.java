@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.http.server.filter;
+package com.github.nhirakawa.wilson.http.server.filter.before;
 
 import java.time.Clock;
 import java.time.Instant;

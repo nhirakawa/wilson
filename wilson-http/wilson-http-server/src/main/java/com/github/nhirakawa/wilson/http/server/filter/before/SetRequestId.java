@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.http.server.filter;
+package com.github.nhirakawa.wilson.http.server.filter.before;
 
 import java.util.UUID;
 import spark.Filter;
