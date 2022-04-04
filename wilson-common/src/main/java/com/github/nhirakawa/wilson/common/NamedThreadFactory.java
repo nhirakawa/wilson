@@ -11,7 +11,7 @@ public final class NamedThreadFactory {
   }
 
   public static ThreadFactory build(String namespace) {
-    return new ThreadFactoryBuilder().setNameFormat(namespace + "-%s").build();
+    return new ThreadFactoryBuilder().setNameFormat(namespace + "-%d").build();
   }
 
   public static ThreadFactory build(
@@ -24,6 +24,6 @@ public final class NamedThreadFactory {
       clusterMember.getHost(),
       clusterMember.getPort()
     );
-    return new ThreadFactoryBuilder().setNameFormat(format + "-%s").build();
+    return new ThreadFactoryBuilder().setNameFormat(format + "-%d").build();
   }
 }

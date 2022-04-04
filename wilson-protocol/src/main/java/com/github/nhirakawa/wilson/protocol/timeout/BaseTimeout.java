@@ -2,6 +2,7 @@ package com.github.nhirakawa.wilson.protocol.timeout;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
 import java.time.Duration;
+import org.slf4j.Logger;
 
 abstract class BaseTimeout extends AbstractScheduledService {
   private final Duration period;
@@ -14,6 +15,8 @@ abstract class BaseTimeout extends AbstractScheduledService {
     this.period = period;
   }
 
+  protected abstract Logger logger();
+
   @Override
   protected Scheduler scheduler() {
     return new JitterScheduler(getPeriod());
@@ -21,5 +24,15 @@ abstract class BaseTimeout extends AbstractScheduledService {
 
   public Duration getPeriod() {
     return period;
+  }
+
+  @Override
+  protected void startUp() throws Exception {
+    logger().debug("Starting up");
+  }
+
+  @Override
+  protected void shutDown() throws Exception {
+    logger().debug("Shutting down");
   }
 }

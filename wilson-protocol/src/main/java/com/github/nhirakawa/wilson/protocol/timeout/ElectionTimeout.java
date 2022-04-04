@@ -5,9 +5,15 @@ import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
 import com.github.nhirakawa.wilson.protocol.StateMachineMessageApplier;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class ElectionTimeout extends BaseTimeout {
+  private static final Logger LOG = LoggerFactory.getLogger(
+    ElectionTimeout.class
+  );
+
   private final StateMachineMessageApplier messageApplier;
 
   @Inject
@@ -27,5 +33,10 @@ public class ElectionTimeout extends BaseTimeout {
         .setElectionTimeout(getPeriod().toMillis())
         .build()
     );
+  }
+
+  @Override
+  protected Logger logger() {
+    return LOG;
   }
 }
