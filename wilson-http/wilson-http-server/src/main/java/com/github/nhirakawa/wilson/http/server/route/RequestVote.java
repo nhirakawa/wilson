@@ -2,13 +2,14 @@ package com.github.nhirakawa.wilson.http.server.route;
 
 import com.github.nhirakawa.wilson.common.ObjectMapperWrapper;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
+import com.github.nhirakawa.wilson.models.messages.VoteResponse;
 import com.github.nhirakawa.wilson.protocol.StateMachineMessageApplier;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 import javax.inject.Inject;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import org.jetbrains.annotations.NotNull;
 
-public class RequestVote implements Route {
+public class RequestVote implements Handler {
   private final StateMachineMessageApplier stateMachineMessageApplier;
 
   @Inject
@@ -17,10 +18,13 @@ public class RequestVote implements Route {
   }
 
   @Override
-  public Object handle(Request request, Response response) throws Exception {
+  public void handle(@NotNull Context ctx) throws Exception {
     VoteRequest voteRequest = ObjectMapperWrapper
       .instance()
-      .readValue(request.bodyAsBytes(), VoteRequest.class);
-    return stateMachineMessageApplier.apply(voteRequest);
+      .readValue(ctx.bodyAsBytes(), VoteRequest.class);
+
+    VoteResponse voteResponse = stateMachineMessageApplier.apply(voteRequest);
+
+    ctx.result(ObjectMapperWrapper.writeValueAsBytes(voteResponse));
   }
 }

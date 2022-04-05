@@ -1,18 +1,16 @@
 package com.github.nhirakawa.wilson.http.server;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.nhirakawa.wilson.common.NamedThreadFactory;
 import com.github.nhirakawa.wilson.http.server.banner.BannerUtil;
 import com.github.nhirakawa.wilson.http.server.config.ConfigLoader;
 import com.github.nhirakawa.wilson.http.server.dagger.DaggerWilsonHttpServerComponent;
-import com.github.nhirakawa.wilson.protocol.WilsonProtocolModule;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
+import com.github.nhirakawa.wilson.protocol.WilsonProtocolModule;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WilsonHttpClusterRunner {
   private static final Logger LOG = LoggerFactory.getLogger(

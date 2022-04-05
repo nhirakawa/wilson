@@ -1,10 +1,7 @@
 package com.github.nhirakawa.wilson.http.server;
 
-import static spark.Spark.after;
-import static spark.Spark.before;
-import static spark.Spark.port;
-import static spark.Spark.post;
-import static spark.Spark.stop;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 import com.github.nhirakawa.wilson.http.server.filter.after.IncrementRequestCounter;
 import com.github.nhirakawa.wilson.http.server.filter.before.SetContentEncoding;
@@ -14,8 +11,8 @@ import com.github.nhirakawa.wilson.http.server.route.AppendEntries;
 import com.github.nhirakawa.wilson.http.server.route.RequestVote;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
 import com.google.common.util.concurrent.AbstractIdleService;
-import javax.inject.Inject;
-import javax.inject.Provider;
+
+import io.javalin.Javalin;
 
 public class WilsonHttpServer extends AbstractIdleService {
   private final WilsonConfig wilsonConfig;
@@ -48,21 +45,20 @@ public class WilsonHttpServer extends AbstractIdleService {
 
   @Override
   protected void startUp() throws Exception {
-    port(wilsonConfig.getLocalMember().getPort());
-    before(
-      setRequestIdProvider.get(),
-      setRequestStartedTimestampProvider.get()
-    );
-    post("/raft/entries", appendEntriesProvider.get());
-    post("/raft/vote", requestVoteProvider.get());
-    after(
-      setContentEncodingProvider.get(),
-      incrementRequestCounterProvider.get()
-    );
+    Javalin app = Javalin.create(config -> {
+      config.showJavalinBanner = false;
+    });
+      app
+        .before(setRequestIdProvider.get())
+        .before(setRequestStartedTimestampProvider.get())
+        .before(setContentEncodingProvider.get())
+        .post("/raft/entries", appendEntriesProvider.get())
+        .post("/raft/vote", requestVoteProvider.get())
+        .after(incrementRequestCounterProvider.get());
+
+      app.start(wilsonConfig.getLocalMember().getPort());
   }
 
   @Override
-  protected void shutDown() throws Exception {
-    stop();
-  }
+  protected void shutDown() throws Exception {}
 }

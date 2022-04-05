@@ -1,13 +1,12 @@
 package com.github.nhirakawa.wilson.http.server.filter.before;
 
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 import java.time.Clock;
-import java.time.Instant;
 import javax.inject.Inject;
-import spark.Filter;
-import spark.Request;
-import spark.Response;
+import org.jetbrains.annotations.NotNull;
 
-public class SetRequestStartedTimestamp implements Filter {
+public class SetRequestStartedTimestamp implements Handler {
   // todo inject this
   private final Clock clock = Clock.systemUTC();
 
@@ -15,7 +14,10 @@ public class SetRequestStartedTimestamp implements Filter {
   SetRequestStartedTimestamp() {}
 
   @Override
-  public void handle(Request request, Response response) {
-    response.header("X-Wilson-Request-Started", clock.instant());
+  public void handle(@NotNull Context ctx) throws Exception {
+    ctx.header(
+      "X-Wilson-Request-Started",
+      Long.toString(clock.instant().toEpochMilli())
+    );
   }
 }
