@@ -1,14 +1,18 @@
 package com.github.nhirakawa.wilson.http.client;
 
+import java.io.IOException;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.github.nhirakawa.wilson.common.ObjectMapperWrapper;
+import com.github.nhirakawa.wilson.http.common.WilsonHeaders;
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.models.messages.AppendEntriesRequest;
 import com.github.nhirakawa.wilson.models.messages.AppendEntriesResponse;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
-import java.io.IOException;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,7 +33,7 @@ public class WilsonHttpClient {
     VoteRequest voteRequest
   ) {
     Request request = new Request.Builder()
-      .header("X-Wilson-Server-Id", clusterMember.getServerId())
+      .header(WilsonHeaders.serverId(), clusterMember.getServerId())
       .url(
         new HttpUrl.Builder()
           .scheme("http")
@@ -58,7 +62,7 @@ public class WilsonHttpClient {
     AppendEntriesRequest appendEntriesRequest
   ) {
     Request request = new Request.Builder()
-      .header("X-Wilson-Server-Id", clusterMember.getServerId())
+      .header(WilsonHeaders.serverId(), clusterMember.getServerId())
       .url(
         new HttpUrl.Builder()
           .scheme("http")
