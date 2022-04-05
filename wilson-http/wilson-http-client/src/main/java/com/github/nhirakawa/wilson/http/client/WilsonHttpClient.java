@@ -29,6 +29,7 @@ public class WilsonHttpClient {
     VoteRequest voteRequest
   ) {
     Request request = new Request.Builder()
+      .header("X-Wilson-Server-Id", clusterMember.getServerId())
       .url(
         new HttpUrl.Builder()
           .scheme("http")
@@ -57,6 +58,7 @@ public class WilsonHttpClient {
     AppendEntriesRequest appendEntriesRequest
   ) {
     Request request = new Request.Builder()
+      .header("X-Wilson-Server-Id", clusterMember.getServerId())
       .url(
         new HttpUrl.Builder()
           .scheme("http")
