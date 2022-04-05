@@ -1,6 +1,6 @@
 package com.github.nhirakawa.wilson.http.server;
 
-import com.github.nhirakawa.wilson.http.server.filter.after.IncrementRequestCounter;
+import com.github.nhirakawa.wilson.http.server.filter.after.AfterRequestMetrics;
 import com.github.nhirakawa.wilson.http.server.filter.before.CheckServerIdHeader;
 import com.github.nhirakawa.wilson.http.server.filter.before.SetContentEncoding;
 import com.github.nhirakawa.wilson.http.server.filter.before.SetRequestId;
@@ -18,7 +18,7 @@ public class WilsonHttpServer extends AbstractIdleService {
   private final Provider<SetContentEncoding> setContentEncodingProvider;
   private final Provider<SetRequestId> setRequestIdProvider;
   private final Provider<SetRequestStartedTimestamp> setRequestStartedTimestampProvider;
-  private final Provider<IncrementRequestCounter> incrementRequestCounterProvider;
+  private final Provider<AfterRequestMetrics> incrementRequestCounterProvider;
   private final Provider<CheckServerIdHeader> checkServerIdHeaderProvider;
   private final Provider<AppendEntries> appendEntriesProvider;
   private final Provider<RequestVote> requestVoteProvider;
@@ -29,7 +29,7 @@ public class WilsonHttpServer extends AbstractIdleService {
     Provider<SetContentEncoding> setContentEncodingProvider,
     Provider<SetRequestId> setRequestIdProvider,
     Provider<SetRequestStartedTimestamp> setRequestStartedTimestampProvider,
-    Provider<IncrementRequestCounter> incrementRequestCounterProvider,
+    Provider<AfterRequestMetrics> incrementRequestCounterProvider,
     Provider<CheckServerIdHeader> checkServerIdHeaderProvider,
     Provider<AppendEntries> appendEntriesProvider,
     Provider<RequestVote> requestVoteProvider

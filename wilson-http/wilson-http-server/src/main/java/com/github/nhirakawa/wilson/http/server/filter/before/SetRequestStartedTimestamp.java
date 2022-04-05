@@ -6,6 +6,9 @@ import java.time.Clock;
 import javax.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Set timestamp for start of processing
+ */
 public class SetRequestStartedTimestamp implements Handler {
   // todo inject this
   private final Clock clock = Clock.systemUTC();

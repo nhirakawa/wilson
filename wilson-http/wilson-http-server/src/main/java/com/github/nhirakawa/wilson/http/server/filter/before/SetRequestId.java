@@ -6,6 +6,9 @@ import java.util.UUID;
 import javax.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * If X-Wilson-Request-Id header is missing, set it
+ */
 public class SetRequestId implements Handler {
 
   @Inject

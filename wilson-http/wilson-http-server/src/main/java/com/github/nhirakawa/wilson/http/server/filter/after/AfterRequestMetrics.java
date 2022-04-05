@@ -5,10 +5,13 @@ import io.javalin.http.Handler;
 import javax.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 
-public class IncrementRequestCounter implements Handler {
+/**
+ * Process metrics after the request
+ */
+public class AfterRequestMetrics implements Handler {
 
   @Inject
-  public IncrementRequestCounter() {}
+  public AfterRequestMetrics() {}
 
   @Override
   public void handle(@NotNull Context ctx) throws Exception {}
