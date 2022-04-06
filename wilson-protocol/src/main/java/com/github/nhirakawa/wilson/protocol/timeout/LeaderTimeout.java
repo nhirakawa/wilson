@@ -12,6 +12,7 @@ public class LeaderTimeout extends BaseTimeout {
     LeaderTimeout.class
   );
 
+  private final WilsonConfig wilsonConfig;
   private final StateMachineMessageApplier stateMachineMessageApplier;
 
   @Inject
@@ -21,6 +22,7 @@ public class LeaderTimeout extends BaseTimeout {
   ) {
     super(wilsonConfig.getLeaderTimeout());
     this.stateMachineMessageApplier = stateMachineMessageApplier;
+    this.wilsonConfig = wilsonConfig;
   }
 
   @Override
@@ -36,5 +38,14 @@ public class LeaderTimeout extends BaseTimeout {
   @Override
   protected Logger logger() {
     return LOG;
+  }
+
+  @Override
+  protected String serviceName() {
+    return String.format(
+      "%s-%s",
+      LeaderTimeout.class.getSimpleName(),
+      wilsonConfig.getLocalMember().getServerId()
+    );
   }
 }

@@ -28,11 +28,14 @@ abstract class BaseTimeout extends AbstractScheduledService {
 
   @Override
   protected void startUp() throws Exception {
-    logger().debug("Starting up");
+    logger().info("Starting up");
   }
 
   @Override
   protected void shutDown() throws Exception {
     logger().debug("Shutting down");
   }
+
+  @Override
+  protected abstract String serviceName();
 }

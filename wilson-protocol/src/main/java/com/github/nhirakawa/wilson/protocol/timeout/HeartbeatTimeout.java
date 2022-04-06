@@ -14,6 +14,7 @@ public class HeartbeatTimeout extends BaseTimeout {
     HeartbeatTimeout.class
   );
 
+  private final WilsonConfig wilsonConfig;
   private final StateMachineMessageApplier applier;
 
   @Inject
@@ -23,6 +24,7 @@ public class HeartbeatTimeout extends BaseTimeout {
   ) {
     super(wilsonConfig.getHeartbeatTimeout());
     this.applier = applier;
+    this.wilsonConfig = wilsonConfig;
   }
 
   @Override
@@ -38,5 +40,14 @@ public class HeartbeatTimeout extends BaseTimeout {
   @Override
   protected Logger logger() {
     return LOG;
+  }
+
+  @Override
+  protected String serviceName() {
+    return String.format(
+      "%s-%s",
+      HeartbeatTimeout.class.getSimpleName(),
+      wilsonConfig.getLocalMember().getServerId()
+    );
   }
 }
