@@ -66,4 +66,13 @@ public class WilsonHttpServer extends AbstractIdleService {
 
   @Override
   protected void shutDown() throws Exception {}
+
+  @Override
+  protected String serviceName() {
+    return String.format(
+      "%s-%s",
+      WilsonHttpServer.class.getSimpleName(),
+      wilsonConfig.getLocalMember().getServerId()
+    );
+  }
 }
