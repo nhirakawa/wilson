@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.protocol.timeout;
+package com.github.nhirakawa.wilson.protocol.service.timeout;
 
 import com.github.nhirakawa.wilson.models.messages.HeartbeatTimeoutMessage;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;

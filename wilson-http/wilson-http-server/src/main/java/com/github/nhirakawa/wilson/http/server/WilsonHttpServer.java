@@ -12,8 +12,14 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import io.javalin.Javalin;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WilsonHttpServer extends AbstractIdleService {
+  private static final Logger LOG = LoggerFactory.getLogger(
+    WilsonHttpServer.class
+  );
+
   private final WilsonConfig wilsonConfig;
   private final Provider<SetContentEncoding> setContentEncodingProvider;
   private final Provider<SetRequestId> setRequestIdProvider;
@@ -50,6 +56,17 @@ public class WilsonHttpServer extends AbstractIdleService {
     Javalin app = Javalin.create(
       config -> {
         config.showJavalinBanner = false;
+        config.requestLogger(
+          (context, ms) -> {
+            LOG.info(
+              "{} {} {} {}ms",
+              context.method(),
+              context.url(),
+              context.status(),
+              ms
+            );
+          }
+        );
       }
     );
     app

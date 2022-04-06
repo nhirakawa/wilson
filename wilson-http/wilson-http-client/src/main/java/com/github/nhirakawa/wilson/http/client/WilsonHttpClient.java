@@ -6,14 +6,19 @@ import com.github.nhirakawa.wilson.models.messages.AppendEntriesRequest;
 import com.github.nhirakawa.wilson.models.messages.AppendEntriesResponse;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
+import com.google.common.base.Preconditions;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
 @Singleton
 public class WilsonHttpClient {
@@ -24,7 +29,7 @@ public class WilsonHttpClient {
     this.okHttpClient = okHttpClient;
   }
 
-  public VoteResponse requestVote(
+  public CompletableFuture<VoteResponse> requestVote(
     ClusterMember clusterMember,
     VoteRequest voteRequest
   ) {
@@ -43,17 +48,41 @@ public class WilsonHttpClient {
       )
       .build();
 
-    try (Response response = okHttpClient.newCall(request).execute()) {
-      return ObjectMapperWrapper.readValue(
-        response.body().byteStream(),
-        VoteResponse.class
+    CompletableFuture<VoteResponse> future = new CompletableFuture<>();
+
+    okHttpClient
+      .newCall(request)
+      .enqueue(
+        new Callback() {
+
+          @Override
+          public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            future.completeExceptionally(e);
+          }
+
+          @Override
+          public void onResponse(
+            @NotNull Call call,
+            @NotNull Response response
+          )
+            throws IOException {
+            if (response.isSuccessful()) {
+              VoteResponse voteResponse = ObjectMapperWrapper.readValue(
+                response.body().byteStream(),
+                VoteResponse.class
+              );
+              future.complete(voteResponse);
+            } else {
+              future.completeExceptionally(toException(response));
+            }
+          }
+        }
       );
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+
+    return future;
   }
 
-  public AppendEntriesResponse sendHeartbeat(
+  public CompletableFuture<AppendEntriesResponse> sendHeartbeat(
     ClusterMember clusterMember,
     AppendEntriesRequest appendEntriesRequest
   ) {
@@ -74,13 +103,49 @@ public class WilsonHttpClient {
       )
       .build();
 
-    try (Response response = okHttpClient.newCall(request).execute()) {
-      return ObjectMapperWrapper.readValue(
-        response.body().byteStream(),
-        AppendEntriesResponse.class
+    CompletableFuture<AppendEntriesResponse> future = new CompletableFuture<>();
+
+    okHttpClient
+      .newCall(request)
+      .enqueue(
+        new Callback() {
+
+          @Override
+          public void onFailure(@NotNull Call call, @NotNull IOException e) {
+            future.completeExceptionally(e);
+          }
+
+          @Override
+          public void onResponse(
+            @NotNull Call call,
+            @NotNull Response response
+          )
+            throws IOException {
+            if (response.isSuccessful()) {
+              AppendEntriesResponse appendEntriesResponse = ObjectMapperWrapper.readValue(
+                response.body().byteStream(),
+                AppendEntriesResponse.class
+              );
+              future.complete(appendEntriesResponse);
+            } else {
+              future.completeExceptionally(toException(response));
+            }
+          }
+        }
       );
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+
+    return future;
+  }
+
+  public Exception toException(Response response) {
+    Preconditions.checkArgument(!response.isSuccessful());
+
+    return new RuntimeException(
+      String.format(
+        "Received %s response - %s",
+        response.code(),
+        response.body()
+      )
+    );
   }
 }

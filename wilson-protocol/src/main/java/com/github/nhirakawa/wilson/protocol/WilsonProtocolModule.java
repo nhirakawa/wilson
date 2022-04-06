@@ -3,8 +3,17 @@ package com.github.nhirakawa.wilson.protocol;
 import com.github.nhirakawa.wilson.common.NamedThreadFactory;
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.models.WilsonState;
+import com.github.nhirakawa.wilson.protocol.annotation.LocalMember;
+import com.github.nhirakawa.wilson.protocol.annotation.WilsonProtocol;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
+import com.github.nhirakawa.wilson.protocol.service.DeadLetterLogger;
+import com.github.nhirakawa.wilson.protocol.service.MessageSender;
+import com.github.nhirakawa.wilson.protocol.service.timeout.ElectionTimeout;
+import com.github.nhirakawa.wilson.protocol.service.timeout.HeartbeatTimeout;
+import com.github.nhirakawa.wilson.protocol.service.timeout.LeaderTimeout;
+import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
+import com.google.common.util.concurrent.ServiceManager;
 import dagger.Module;
 import dagger.Provides;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,5 +69,26 @@ public class WilsonProtocolModule {
   protected EventBus provideEventBus() {
     EventBus eventBus = new EventBus();
     return eventBus;
+  }
+
+  @Provides
+  @Singleton
+  @WilsonProtocol
+  ServiceManager provideWilsonProtocolServiceManager(
+    DeadLetterLogger deadLetterLogger,
+    MessageSender messageSender,
+    ElectionTimeout electionTimeout,
+    HeartbeatTimeout heartbeatTimeout,
+    LeaderTimeout leaderTimeout
+  ) {
+    return new ServiceManager(
+      ImmutableList.of(
+        deadLetterLogger,
+        messageSender,
+        electionTimeout,
+        heartbeatTimeout,
+        leaderTimeout
+      )
+    );
   }
 }
