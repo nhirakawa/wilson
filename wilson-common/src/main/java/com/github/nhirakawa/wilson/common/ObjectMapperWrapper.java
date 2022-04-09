@@ -3,9 +3,11 @@ package com.github.nhirakawa.wilson.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.github.nhirakawa.wilson.common.config.ConfigPath;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigRenderOptions;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
@@ -45,7 +47,18 @@ public final class ObjectMapperWrapper {
     }
   }
 
-  public static <T> T readValue(InputStream inputStream, Class<T> clazz) {
+  public static InputStream writeValueAsInputStream(Object object) {
+    try {
+      return new ByteArrayInputStream(INSTANCE.writeValueAsBytes(object));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T readValueFromInputStream(
+    InputStream inputStream,
+    Class<T> clazz
+  ) {
     try {
       return INSTANCE.readValue(inputStream, clazz);
     } catch (IOException e) {
@@ -53,7 +66,17 @@ public final class ObjectMapperWrapper {
     }
   }
 
+  public static <T> T readValueFromString(String string, Class<T> clazz) {
+    try {
+      return INSTANCE.readValue(string, clazz);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static ObjectMapper buildInstance() {
-    return new ObjectMapper();
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new GuavaModule());
+    return objectMapper;
   }
 }

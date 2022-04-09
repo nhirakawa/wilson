@@ -19,7 +19,7 @@ public class AppendEntries implements Handler {
 
   @Override
   public void handle(@NotNull Context ctx) throws Exception {
-    AppendEntriesRequest appendEntriesRequest = ObjectMapperWrapper.readValue(
+    AppendEntriesRequest appendEntriesRequest = ObjectMapperWrapper.readValueFromInputStream(
       ctx.bodyAsInputStream(),
       AppendEntriesRequest.class
     );

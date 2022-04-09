@@ -28,6 +28,7 @@ public class WilsonHttpServer extends AbstractIdleService {
   private final Provider<CheckServerIdHeader> checkServerIdHeaderProvider;
   private final Provider<AppendEntries> appendEntriesProvider;
   private final Provider<RequestVote> requestVoteProvider;
+  private final Provider<JacksonJsonMapper> jacksonJsonMapperProvider;
 
   @Inject
   public WilsonHttpServer(
@@ -38,7 +39,8 @@ public class WilsonHttpServer extends AbstractIdleService {
     Provider<AfterRequestMetrics> incrementRequestCounterProvider,
     Provider<CheckServerIdHeader> checkServerIdHeaderProvider,
     Provider<AppendEntries> appendEntriesProvider,
-    Provider<RequestVote> requestVoteProvider
+    Provider<RequestVote> requestVoteProvider,
+    Provider<JacksonJsonMapper> jacksonJsonMapperProvider
   ) {
     this.wilsonConfig = wilsonConfig;
     this.setContentEncodingProvider = setContentEncodingProvider;
@@ -49,6 +51,7 @@ public class WilsonHttpServer extends AbstractIdleService {
     this.checkServerIdHeaderProvider = checkServerIdHeaderProvider;
     this.appendEntriesProvider = appendEntriesProvider;
     this.requestVoteProvider = requestVoteProvider;
+    this.jacksonJsonMapperProvider = jacksonJsonMapperProvider;
   }
 
   @Override
@@ -67,6 +70,7 @@ public class WilsonHttpServer extends AbstractIdleService {
             );
           }
         );
+        config.jsonMapper(jacksonJsonMapperProvider.get());
       }
     );
     app

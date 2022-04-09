@@ -65,7 +65,7 @@ public class WilsonHttpClient {
           public void onResponse(Call call, Response response)
             throws IOException {
             if (response.isSuccessful()) {
-              VoteResponse voteResponse = ObjectMapperWrapper.readValue(
+              VoteResponse voteResponse = ObjectMapperWrapper.readValueFromInputStream(
                 response.body().byteStream(),
                 VoteResponse.class
               );
@@ -118,7 +118,7 @@ public class WilsonHttpClient {
           public void onResponse(Call call, Response response)
             throws IOException {
             if (response.isSuccessful()) {
-              AppendEntriesResponse appendEntriesResponse = ObjectMapperWrapper.readValue(
+              AppendEntriesResponse appendEntriesResponse = ObjectMapperWrapper.readValueFromInputStream(
                 response.body().byteStream(),
                 AppendEntriesResponse.class
               );
