@@ -40,7 +40,8 @@ public class WilsonHttpClient {
           .scheme("http")
           .host(clusterMember.getHost())
           .port(clusterMember.getPort())
-          .addPathSegment("/raft/vote")
+          .addPathSegment("raft")
+          .addPathSegment("vote")
           .build()
       )
       .post(
@@ -90,7 +91,8 @@ public class WilsonHttpClient {
           .scheme("http")
           .host(clusterMember.getHost())
           .port(clusterMember.getPort())
-          .addPathSegment("/raft/entries")
+          .addPathSegment("raft")
+          .addPathSegment("entries")
           .build()
       )
       .post(
