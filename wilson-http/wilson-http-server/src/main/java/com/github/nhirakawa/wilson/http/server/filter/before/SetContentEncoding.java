@@ -3,7 +3,6 @@ package com.github.nhirakawa.wilson.http.server.filter.before;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import javax.inject.Inject;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Set Content-Type according to Accept
@@ -14,7 +13,7 @@ public class SetContentEncoding implements Handler {
   SetContentEncoding() {}
 
   @Override
-  public void handle(@NotNull Context ctx) throws Exception {
+  public void handle(Context ctx) throws Exception {
     //    ctx.contentType(ContentType.APPLICATION_GZ);
   }
 }

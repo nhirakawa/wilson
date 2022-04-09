@@ -84,7 +84,7 @@ public class StateMachineMessageApplierTest {
     );
 
     StateMachineMessageApplier stateMachineMessageApplier = buildMessageApplier(
-      ImmutableSet.of(LOCAL_SERVER, OTHER_SERVER),
+      ImmutableSet.of(OTHER_SERVER),
       wilsonStateReference
     );
 

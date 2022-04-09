@@ -7,7 +7,6 @@ import com.github.nhirakawa.wilson.protocol.StateMachineMessageApplier;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import javax.inject.Inject;
-import org.jetbrains.annotations.NotNull;
 
 public class AppendEntries implements Handler {
   private final StateMachineMessageApplier stateMachineMessageApplier;
@@ -18,7 +17,7 @@ public class AppendEntries implements Handler {
   }
 
   @Override
-  public void handle(@NotNull Context ctx) throws Exception {
+  public void handle(Context ctx) throws Exception {
     AppendEntriesRequest appendEntriesRequest = ObjectMapperWrapper.readValueFromInputStream(
       ctx.bodyAsInputStream(),
       AppendEntriesRequest.class
