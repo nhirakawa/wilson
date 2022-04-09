@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.protocol;
+package com.github.nhirakawa.wilson.protocol.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

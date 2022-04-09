@@ -1,15 +1,11 @@
 package com.github.nhirakawa.wilson.http.server.filter.before;
 
-import java.time.Clock;
-
-import javax.inject.Inject;
-
-import org.jetbrains.annotations.NotNull;
-
 import com.github.nhirakawa.wilson.http.common.WilsonHeaders;
-
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import java.time.Clock;
+import javax.inject.Inject;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Set timestamp for start of processing
@@ -24,7 +20,7 @@ public class SetRequestStartedTimestamp implements Handler {
   @Override
   public void handle(@NotNull Context ctx) throws Exception {
     ctx.header(
-        WilsonHeaders.requestStarted(),
+      WilsonHeaders.requestStarted(),
       Long.toString(clock.instant().toEpochMilli())
     );
   }

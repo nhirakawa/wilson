@@ -1,32 +1,26 @@
 package com.github.nhirakawa.wilson.protocol;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.nhirakawa.wilson.models.ClusterMember;
 import com.github.nhirakawa.wilson.models.LeaderState;
 import com.github.nhirakawa.wilson.models.LogItem;
-import com.github.nhirakawa.wilson.models.messages.AppendEntriesRequest;
 import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.HeartbeatTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
-import com.github.nhirakawa.wilson.models.messages.VoteRequestModel;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
 import com.github.nhirakawa.wilson.models.messages.VoteResponseModel;
 import com.github.nhirakawa.wilson.models.WilsonState;
 import com.github.nhirakawa.wilson.models.WilsonStateModel;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.eventbus.EventBus;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.Set;
-import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Captor;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StateMachineMessageApplierTest {
@@ -41,11 +35,12 @@ public class StateMachineMessageApplierTest {
     .setPort(9001)
     .build();
 
-  @Mock
-  private EventBus eventBus;
+  private FakeMessageSender messageSender;
 
-  @Captor
-  private ArgumentCaptor<VoteRequestModel> voteRequestCaptor;
+  @Before
+  public void setup() {
+    messageSender = new FakeMessageSender();
+  }
 
   @Test
   public void itDoesNothingWhenLeaderTimeoutAndLeaderIsValid() {
@@ -71,11 +66,9 @@ public class StateMachineMessageApplierTest {
     stateMachineMessageApplier.apply(leaderTimeoutMessageModel);
 
     WilsonStateModel wilsonState = wilsonStateReference.get();
-    Assertions.assertThat(wilsonState.getCurrentTerm()).isEqualTo(1L);
-    Assertions
-      .assertThat(wilsonState.getLeaderState())
-      .isEqualTo(LeaderState.FOLLOWER);
-    Assertions.assertThat(wilsonState.getLastVotedFor()).isNotPresent();
+    assertThat(wilsonState.getCurrentTerm()).isEqualTo(1L);
+    assertThat(wilsonState.getLeaderState()).isEqualTo(LeaderState.FOLLOWER);
+    assertThat(wilsonState.getLastVotedFor()).isNotPresent();
   }
 
   @Test
@@ -103,19 +96,14 @@ public class StateMachineMessageApplierTest {
     stateMachineMessageApplier.apply(leaderTimeoutMessageModel);
 
     WilsonState wilsonState = wilsonStateReference.get();
-    Assertions.assertThat(wilsonState.getCurrentTerm()).isEqualTo(6L);
-    Assertions
-      .assertThat(wilsonState.getLastVotedFor())
+    assertThat(wilsonState.getCurrentTerm()).isEqualTo(6L);
+    assertThat(wilsonState.getLastVotedFor())
       .isPresent()
       .contains(LOCAL_SERVER);
-    Assertions
-      .assertThat(wilsonState.getVotesReceivedFrom())
+    assertThat(wilsonState.getVotesReceivedFrom())
       .containsExactly(LOCAL_SERVER);
-    Assertions
-      .assertThat(wilsonState.getLeaderState())
-      .isEqualTo(LeaderState.CANDIDATE);
+    assertThat(wilsonState.getLeaderState()).isEqualTo(LeaderState.CANDIDATE);
 
-    Mockito.verify(eventBus).post(voteRequestCaptor.capture());
     VoteRequest expectedVoteRequest = VoteRequest
       .builder()
       .setClusterMember(LOCAL_SERVER)
@@ -123,8 +111,7 @@ public class StateMachineMessageApplierTest {
       .setLastLogTerm(4L)
       .setLastLogIndex(3L)
       .build();
-    Assertions
-      .assertThat(voteRequestCaptor.getAllValues())
+    assertThat(messageSender.getVoteRequests())
       .containsExactly(expectedVoteRequest);
   }
 
@@ -157,7 +144,7 @@ public class StateMachineMessageApplierTest {
     stateMachineMessageApplier.apply(leaderTimeoutMessageModel);
 
     WilsonState updatedWilsonState = wilsonStateReference.get();
-    Assertions.assertThat(updatedWilsonState).isEqualTo(wilsonState);
+    assertThat(updatedWilsonState).isEqualTo(wilsonState);
   }
 
   @Test
@@ -187,7 +174,7 @@ public class StateMachineMessageApplierTest {
     stateMachineMessageApplier.apply(leaderTimeoutMessageModel);
 
     WilsonState updatedWilsonState = wilsonStateReference.get();
-    Assertions.assertThat(updatedWilsonState).isEqualTo(wilsonState);
+    assertThat(updatedWilsonState).isEqualTo(wilsonState);
   }
 
   @Test
@@ -217,17 +204,15 @@ public class StateMachineMessageApplierTest {
       .build();
 
     VoteResponse voteResponse = stateMachineMessageApplier.apply(voteRequest);
-    Assertions.assertThat(voteResponse.getTerm()).isEqualTo(2L);
-    Assertions.assertThat(voteResponse.isVoteGranted()).isFalse();
+    assertThat(voteResponse.getTerm()).isEqualTo(2L);
+    assertThat(voteResponse.isVoteGranted()).isFalse();
 
     WilsonState updatedWilsonState = wilsonStateReference.get();
-    Assertions
-      .assertThat(updatedWilsonState.getLastVotedFor())
+    assertThat(updatedWilsonState.getLastVotedFor())
       .isPresent()
       .contains(LOCAL_SERVER);
-    Assertions.assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
-    Assertions
-      .assertThat(updatedWilsonState.getLeaderState())
+    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
+    assertThat(updatedWilsonState.getLeaderState())
       .isEqualTo(LeaderState.CANDIDATE);
   }
 
@@ -255,8 +240,8 @@ public class StateMachineMessageApplierTest {
       .build();
 
     VoteResponse voteResponse = applier.apply(voteRequest);
-    Assertions.assertThat(voteResponse.getTerm()).isEqualTo(2L);
-    Assertions.assertThat(voteResponse.isVoteGranted()).isFalse();
+    assertThat(voteResponse.getTerm()).isEqualTo(2L);
+    assertThat(voteResponse.isVoteGranted()).isFalse();
   }
 
   @Test
@@ -284,8 +269,8 @@ public class StateMachineMessageApplierTest {
       .build();
 
     VoteResponseModel voteResponse = applier.apply(voteRequest);
-    Assertions.assertThat(voteResponse.getTerm()).isEqualTo(2L);
-    Assertions.assertThat(voteResponse.isVoteGranted()).isFalse();
+    assertThat(voteResponse.getTerm()).isEqualTo(2L);
+    assertThat(voteResponse.isVoteGranted()).isFalse();
   }
 
   @Test
@@ -312,8 +297,8 @@ public class StateMachineMessageApplierTest {
       .build();
 
     VoteResponseModel voteResponse = applier.apply(voteRequest);
-    Assertions.assertThat(voteResponse.getTerm()).isEqualTo(2L);
-    Assertions.assertThat(voteResponse.isVoteGranted()).isFalse();
+    assertThat(voteResponse.getTerm()).isEqualTo(2L);
+    assertThat(voteResponse.isVoteGranted()).isFalse();
   }
 
   @Test
@@ -343,20 +328,15 @@ public class StateMachineMessageApplierTest {
     VoteResponseModel voteResponse = stateMachineMessageApplier.apply(
       voteRequest
     );
-    Assertions.assertThat(voteResponse.isVoteGranted()).isTrue();
-    Assertions
-      .assertThat(voteResponse.getTerm())
-      .isEqualTo(voteRequest.getTerm());
+    assertThat(voteResponse.isVoteGranted()).isTrue();
+    assertThat(voteResponse.getTerm()).isEqualTo(voteRequest.getTerm());
 
     WilsonStateModel updatedWilsonState = wilsonStateReference.get();
-    Assertions
-      .assertThat(updatedWilsonState.getLeaderState())
+    assertThat(updatedWilsonState.getLeaderState())
       .isEqualTo(LeaderState.FOLLOWER);
-    Assertions
-      .assertThat(updatedWilsonState.getCurrentTerm())
+    assertThat(updatedWilsonState.getCurrentTerm())
       .isEqualTo(voteRequest.getTerm());
-    Assertions
-      .assertThat(updatedWilsonState.getLastVotedFor())
+    assertThat(updatedWilsonState.getLastVotedFor())
       .isPresent()
       .contains(OTHER_SERVER);
   }
@@ -387,7 +367,7 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(electionTimeoutMessageModel);
 
-    Assertions.assertThat(wilsonStateReference.get()).isEqualTo(wilsonState);
+    assertThat(wilsonStateReference.get()).isEqualTo(wilsonState);
   }
 
   @Test
@@ -416,7 +396,7 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(electionTimeoutMessageModel);
 
-    Assertions.assertThat(wilsonStateReference.get()).isEqualTo(wilsonState);
+    assertThat(wilsonStateReference.get()).isEqualTo(wilsonState);
   }
 
   @Test
@@ -447,7 +427,7 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(electionTimeoutMessageModel);
 
-    Assertions.assertThat(wilsonStateReference.get()).isEqualTo(wilsonState);
+    assertThat(wilsonStateReference.get()).isEqualTo(wilsonState);
   }
 
   @Test
@@ -479,12 +459,10 @@ public class StateMachineMessageApplierTest {
     applier.apply(electionTimeoutMessageModel);
 
     WilsonState updatedState = wilsonStateReference.get();
-    Assertions.assertThat(updatedState.getCurrentTerm()).isEqualTo(1L);
-    Assertions.assertThat(updatedState.getLastElectionStarted()).isEmpty();
-    Assertions.assertThat(updatedState.getLastVotedFor()).isEmpty();
-    Assertions
-      .assertThat(updatedState.getLeaderState())
-      .isEqualTo(LeaderState.FOLLOWER);
+    assertThat(updatedState.getCurrentTerm()).isEqualTo(1L);
+    assertThat(updatedState.getLastElectionStarted()).isEmpty();
+    assertThat(updatedState.getLastVotedFor()).isEmpty();
+    assertThat(updatedState.getLeaderState()).isEqualTo(LeaderState.FOLLOWER);
   }
 
   @Test
@@ -514,9 +492,7 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(voteResponse, OTHER_SERVER);
 
-    Assertions
-      .assertThat(wilsonStateReference.get())
-      .isEqualTo(immutableWilsonState);
+    assertThat(wilsonStateReference.get()).isEqualTo(immutableWilsonState);
   }
 
   @Test
@@ -557,11 +533,9 @@ public class StateMachineMessageApplierTest {
     applier.apply(voteResponse, OTHER_SERVER);
 
     WilsonState updatedWilsonState = wilsonStateReference.get();
-    Assertions
-      .assertThat(updatedWilsonState.getLeaderState())
+    assertThat(updatedWilsonState.getLeaderState())
       .isEqualTo(LeaderState.CANDIDATE);
-    Assertions
-      .assertThat(updatedWilsonState.getVotesReceivedFrom())
+    assertThat(updatedWilsonState.getVotesReceivedFrom())
       .containsExactlyInAnyOrder(LOCAL_SERVER, OTHER_SERVER);
   }
 
@@ -598,14 +572,11 @@ public class StateMachineMessageApplierTest {
     applier.apply(voteResponse, OTHER_SERVER);
 
     WilsonStateModel updatedWilsonState = wilsonStateReference.get();
-    Assertions
-      .assertThat(updatedWilsonState.getLeaderState())
+    assertThat(updatedWilsonState.getLeaderState())
       .isEqualTo(LeaderState.LEADER);
-    Assertions.assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
-    Assertions.assertThat(updatedWilsonState.getLastVotedFor()).isNotPresent();
-    Assertions
-      .assertThat(updatedWilsonState.getLastElectionStarted())
-      .isNotPresent();
+    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
+    assertThat(updatedWilsonState.getLastVotedFor()).isNotPresent();
+    assertThat(updatedWilsonState.getLastElectionStarted()).isNotPresent();
   }
 
   @Test
@@ -646,14 +617,11 @@ public class StateMachineMessageApplierTest {
     applier.apply(voteResponse, thirdMember);
 
     WilsonState updatedWilsonState = wilsonStateReference.get();
-    Assertions
-      .assertThat(updatedWilsonState.getLeaderState())
+    assertThat(updatedWilsonState.getLeaderState())
       .isEqualTo(LeaderState.LEADER);
-    Assertions.assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
-    Assertions.assertThat(updatedWilsonState.getLastVotedFor()).isNotPresent();
-    Assertions
-      .assertThat(updatedWilsonState.getLastElectionStarted())
-      .isNotPresent();
+    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(2L);
+    assertThat(updatedWilsonState.getLastVotedFor()).isNotPresent();
+    assertThat(updatedWilsonState.getLastElectionStarted()).isNotPresent();
   }
 
   @Test
@@ -686,13 +654,10 @@ public class StateMachineMessageApplierTest {
     applier.apply(voteRequest);
 
     WilsonStateModel updatedWilsonState = wilsonStateReference.get();
-    Assertions
-      .assertThat(updatedWilsonState.getLeaderState())
+    assertThat(updatedWilsonState.getLeaderState())
       .isEqualTo(LeaderState.FOLLOWER);
-    Assertions.assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(3L);
-    Assertions
-      .assertThat(updatedWilsonState.getLastVotedFor())
-      .contains(OTHER_SERVER);
+    assertThat(updatedWilsonState.getCurrentTerm()).isEqualTo(3L);
+    assertThat(updatedWilsonState.getLastVotedFor()).contains(OTHER_SERVER);
   }
 
   @Test
@@ -718,9 +683,7 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(timeoutMessage);
 
-    Mockito
-      .verify(eventBus)
-      .post(ArgumentMatchers.any(AppendEntriesRequest.class));
+    assertThat(messageSender.getAppendEntriesRequests()).isNotEmpty();
   }
 
   @Test
@@ -745,7 +708,8 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(timeoutMessage);
 
-    Mockito.verifyNoInteractions(eventBus);
+    assertThat(messageSender.getVoteRequests()).isEmpty();
+    assertThat(messageSender.getAppendEntriesRequests()).isEmpty();
   }
 
   @Test
@@ -771,18 +735,21 @@ public class StateMachineMessageApplierTest {
 
     applier.apply(voteResponse, OTHER_SERVER);
 
-    Mockito.verifyNoInteractions(eventBus);
+    assertThat(messageSender.getVoteRequests()).isEmpty();
+    assertThat(messageSender.getAppendEntriesRequests()).isEmpty();
   }
 
   private StateMachineMessageApplier buildMessageApplier(
     Set<ClusterMember> clusterMembers,
     AtomicReference<WilsonState> wilsonStateReference
   ) {
+    messageSender.clear();
+
     return new StateMachineMessageApplier(
       wilsonStateReference,
       clusterMembers,
       LOCAL_SERVER,
-      eventBus
+      messageSender
     );
   }
 }

@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.protocol.timeout;
+package com.github.nhirakawa.wilson.protocol.service.timeout;
 
 import com.google.common.util.concurrent.AbstractScheduledService.CustomScheduler;
 import java.time.Duration;

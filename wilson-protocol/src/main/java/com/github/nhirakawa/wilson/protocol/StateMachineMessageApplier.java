@@ -11,11 +11,15 @@ import com.github.nhirakawa.wilson.models.messages.LeaderTimeoutMessage;
 import com.github.nhirakawa.wilson.models.messages.VoteRequest;
 import com.github.nhirakawa.wilson.models.messages.VoteResponse;
 import com.github.nhirakawa.wilson.models.WilsonState;
-import com.google.common.eventbus.EventBus;
+import com.github.nhirakawa.wilson.protocol.annotation.LocalMember;
+import com.github.nhirakawa.wilson.protocol.service.MessageSender;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
@@ -27,45 +31,81 @@ public class StateMachineMessageApplier {
     StateMachineMessageApplier.class
   );
 
+  private final Object lock = new Object();
+
   private final AtomicReference<WilsonState> wilsonStateReference;
   private final Set<ClusterMember> clusterMembers;
   private final ClusterMember localMember;
-  private final EventBus eventBus;
+  private final MessageSender messageSender;
 
   @Inject
   StateMachineMessageApplier(
     AtomicReference<WilsonState> wilsonStateReference,
     Set<ClusterMember> clusterMembers,
     @LocalMember ClusterMember localMember,
-    EventBus eventBus
+    MessageSender messageSender
   ) {
     this.wilsonStateReference = wilsonStateReference;
     this.clusterMembers = clusterMembers;
     this.localMember = localMember;
-    this.eventBus = eventBus;
+    this.messageSender = messageSender;
   }
 
-  public synchronized void apply(LeaderTimeoutMessage leaderTimeoutMessage) {
-    WilsonState currentState = wilsonStateReference.get();
-    if (currentState.getLeaderState() != LeaderState.FOLLOWER) {
+  public void apply(LeaderTimeoutMessage leaderTimeoutMessage) {
+    Optional<VoteRequest> maybeVoteRequest = applyLeaderTimeout(
+      leaderTimeoutMessage
+    );
+
+    if (!maybeVoteRequest.isPresent()) {
       return;
     }
 
-    WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(
-      wilsonState -> applyLeaderTimeout(wilsonState, leaderTimeoutMessage)
-    );
-    if (updatedWilsonState.getLeaderState() == LeaderState.CANDIDATE) {
-      VoteRequest voteRequest = VoteRequest
-        .builder()
-        .setClusterMember(localMember)
-        .setTerm(updatedWilsonState.getCurrentTerm())
-        .setLastLogTerm(updatedWilsonState.getLastLogTerm())
-        .setLastLogIndex(updatedWilsonState.getLastLogIndex())
-        .build();
+    VoteRequest voteRequest = maybeVoteRequest.get();
 
-      LOG.trace("Requesting votes with {}", voteRequest);
-      eventBus.post(voteRequest);
+    LOG.trace("Requesting votes with {}", voteRequest);
+
+    List<CompletableFuture<Void>> futures = new ArrayList<>(
+      clusterMembers.size()
+    );
+
+    for (ClusterMember clusterMember : clusterMembers) {
+      CompletableFuture<Void> future = messageSender
+        .handleVote(clusterMember, voteRequest)
+        .thenAccept(voteResponse -> apply(voteResponse, clusterMember));
+      futures.add(future);
     }
+
+    for (CompletableFuture<?> future : futures) {
+      future.join();
+    }
+  }
+
+  private Optional<VoteRequest> applyLeaderTimeout(
+    LeaderTimeoutMessage leaderTimeoutMessage
+  ) {
+    synchronized (lock) {
+      WilsonState currentState = wilsonStateReference.get();
+      if (currentState.getLeaderState() != LeaderState.FOLLOWER) {
+        return Optional.empty();
+      }
+
+      WilsonState updatedWilsonState = wilsonStateReference.updateAndGet(
+        wilsonState -> applyLeaderTimeout(wilsonState, leaderTimeoutMessage)
+      );
+      if (updatedWilsonState.getLeaderState() == LeaderState.CANDIDATE) {
+        VoteRequest voteRequest = VoteRequest
+          .builder()
+          .setClusterMember(localMember)
+          .setTerm(updatedWilsonState.getCurrentTerm())
+          .setLastLogTerm(updatedWilsonState.getLastLogTerm())
+          .setLastLogIndex(updatedWilsonState.getLastLogIndex())
+          .build();
+
+        return Optional.of(voteRequest);
+      }
+    }
+
+    return Optional.empty();
   }
 
   private WilsonState applyLeaderTimeout(
@@ -290,26 +330,49 @@ public class StateMachineMessageApplier {
     );
   }
 
-  public synchronized void apply(
-    HeartbeatTimeoutMessage heartbeatTimeoutMessage
-  ) {
-    WilsonState wilsonState = wilsonStateReference.get();
+  public void apply(HeartbeatTimeoutMessage heartbeatTimeoutMessage) {
+    Optional<AppendEntriesRequest> maybeAppendEntriesRequest = handleHeartbeatTimeout();
 
-    if (wilsonState.getLeaderState() != LeaderState.LEADER) {
+    if (!maybeAppendEntriesRequest.isPresent()) {
       return;
     }
 
-    LOG.debug("Broadcasting heartbeat");
-    AppendEntriesRequest appendEntriesRequest = AppendEntriesRequest
-      .builder()
-      .setLeader(localMember)
-      .setTerm(wilsonState.getCurrentTerm())
-      .setLastLogIndex(wilsonState.getLastLogIndex())
-      .setLastLogTerm(wilsonState.getLastLogTerm())
-      .setLeaderCommitIndex(wilsonState.getCommitIndex())
-      .build();
+    AppendEntriesRequest appendEntriesRequest = maybeAppendEntriesRequest.get();
 
-    eventBus.post(appendEntriesRequest);
+    List<CompletableFuture<?>> futures = new ArrayList<>(clusterMembers.size());
+
+    for (ClusterMember clusterMember : clusterMembers) {
+      CompletableFuture<Void> future = messageSender
+        .handleAppendEntries(clusterMember, appendEntriesRequest)
+        .thenAccept(ignored -> {});
+      futures.add(future);
+    }
+
+    for (CompletableFuture<?> future : futures) {
+      future.join();
+    }
+  }
+
+  private Optional<AppendEntriesRequest> handleHeartbeatTimeout() {
+    synchronized (lock) {
+      WilsonState wilsonState = wilsonStateReference.get();
+
+      if (wilsonState.getLeaderState() != LeaderState.LEADER) {
+        return Optional.empty();
+      }
+
+      LOG.debug("Broadcasting heartbeat");
+      AppendEntriesRequest appendEntriesRequest = AppendEntriesRequest
+        .builder()
+        .setLeader(localMember)
+        .setTerm(wilsonState.getCurrentTerm())
+        .setLastLogIndex(wilsonState.getLastLogIndex())
+        .setLastLogTerm(wilsonState.getLastLogTerm())
+        .setLeaderCommitIndex(wilsonState.getCommitIndex())
+        .build();
+
+      return Optional.of(appendEntriesRequest);
+    }
   }
 
   public synchronized AppendEntriesResponse apply(

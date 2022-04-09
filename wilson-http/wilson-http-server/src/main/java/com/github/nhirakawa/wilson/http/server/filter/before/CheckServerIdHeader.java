@@ -1,15 +1,12 @@
 package com.github.nhirakawa.wilson.http.server.filter.before;
 
-import javax.inject.Inject;
-
-import org.jetbrains.annotations.NotNull;
-
 import com.github.nhirakawa.wilson.http.common.WilsonHeaders;
 import com.google.common.base.Strings;
-
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.http.HttpCode;
+import javax.inject.Inject;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Return 400 if X-Wilson-Server-Id header is missing or empty

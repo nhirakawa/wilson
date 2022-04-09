@@ -1,4 +1,4 @@
-package com.github.nhirakawa.wilson.protocol.timeout;
+package com.github.nhirakawa.wilson.protocol.service.timeout;
 
 import com.github.nhirakawa.wilson.models.messages.ElectionTimeoutMessage;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
@@ -14,6 +14,7 @@ public class ElectionTimeout extends BaseTimeout {
     ElectionTimeout.class
   );
 
+  private final WilsonConfig wilsonConfig;
   private final StateMachineMessageApplier messageApplier;
 
   @Inject
@@ -22,6 +23,7 @@ public class ElectionTimeout extends BaseTimeout {
     StateMachineMessageApplier messageApplier
   ) {
     super(wilsonConfig.getElectionTimeout());
+    this.wilsonConfig = wilsonConfig;
     this.messageApplier = messageApplier;
   }
 
@@ -38,5 +40,14 @@ public class ElectionTimeout extends BaseTimeout {
   @Override
   protected Logger logger() {
     return LOG;
+  }
+
+  @Override
+  protected String serviceName() {
+    return String.format(
+      "%s-%s",
+      ElectionTimeout.class.getSimpleName(),
+      wilsonConfig.getLocalMember().getServerId()
+    );
   }
 }
