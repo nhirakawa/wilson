@@ -39,7 +39,7 @@
     <javax.inject.version>1</javax.inject.version>
     <junit.version>4.13.1</junit.version>
     <log4j.version>2.7</log4j.version>
-    <logback.version>1.2.3</logback.version>
+    <logback.version>1.2.9</logback.version>
     <mockito.version>${javalin.version}</mockito.version>
     <netty.version>4.1.12.Final</netty.version>
     <okhttp.version>4.9.3</okhttp.version>
