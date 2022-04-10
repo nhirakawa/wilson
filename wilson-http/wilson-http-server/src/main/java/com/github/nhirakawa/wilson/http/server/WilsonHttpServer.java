@@ -1,5 +1,11 @@
 package com.github.nhirakawa.wilson.http.server;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.nhirakawa.wilson.http.server.filter.after.AfterRequestMetrics;
 import com.github.nhirakawa.wilson.http.server.filter.before.CheckServerIdHeader;
 import com.github.nhirakawa.wilson.http.server.filter.before.SetContentEncoding;
@@ -9,11 +15,8 @@ import com.github.nhirakawa.wilson.http.server.route.AppendEntries;
 import com.github.nhirakawa.wilson.http.server.route.RequestVote;
 import com.github.nhirakawa.wilson.protocol.config.WilsonConfig;
 import com.google.common.util.concurrent.AbstractIdleService;
+
 import io.javalin.Javalin;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WilsonHttpServer extends AbstractIdleService {
   private static final Logger LOG = LoggerFactory.getLogger(
@@ -59,17 +62,6 @@ public class WilsonHttpServer extends AbstractIdleService {
     Javalin app = Javalin.create(
       config -> {
         config.showJavalinBanner = false;
-        config.requestLogger(
-          (context, ms) -> {
-            LOG.info(
-              "{} {} {} {}ms",
-              context.method(),
-              context.url(),
-              context.status(),
-              ms
-            );
-          }
-        );
         config.jsonMapper(jacksonJsonMapperProvider.get());
       }
     );
