@@ -14,13 +14,11 @@
       <groupId>com.github.nhirakawa</groupId>
       <artifactId>wilson-common</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.github.nhirakawa</groupId>
       <artifactId>wilson-http-common</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.github.nhirakawa</groupId>
