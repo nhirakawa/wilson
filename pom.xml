@@ -29,7 +29,7 @@
     <findbugs.version>2.0.2</findbugs.version>
     <grpc.version>1.5.0</grpc.version>
     <guava-retrying.version>2.0.0</guava-retrying.version>
-    <guava.version>30.0-jre</guava.version>
+    <guava.version>32.0.0-jre</guava.version>
     <guice.version>4.1.0</guice.version>
     <immutables.version>2.3.2</immutables.version>
     <jackson.version>2.14.1</jackson.version>
